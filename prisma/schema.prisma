@@ -12,3 +12,136 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id                   Int                    @id @default(autoincrement())
+  email                String                 @db.VarChar(100)
+  password             String
+  firstName            String                 @db.VarChar(100)
+  lastName             String                 @db.VarChar(100)
+  role                 Role                   @default(NOTEMPLOYED)
+  avatarUrl            String
+  hiringAt             DateTime               @db.Date
+  isConnected          Boolean                @default(false)
+  isAvailable          Boolean                @default(false)
+  isActif              Boolean                @default(false)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  alerts               Alert[]
+  conversations        Conversation[]
+  userIsInConversation UserIsInConversation[]
+  messages             Message[]
+  readedMessages       ReadedMessages[]
+  readedAlerts         ReadedAlerts[]
+  assignedTrains       AssignedTrain[]
+}
+
+enum Role {
+  SUPERVISOR
+  COORDINATOR
+  DRIVER
+  NOTEMPLOYED
+}
+
+model UserIsInConversation {
+  userId         Int          @unique
+  user           User         @relation(fields: [userId], references: [id])
+  conversationId Int          @unique
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  isHide         Boolean
+
+  @@id([userId, conversationId])
+}
+
+model Conversation {
+  id                   Int                    @id @default(autoincrement())
+  createdAt            DateTime               @default(now())
+  updateAt             DateTime               @updatedAt()
+  userId               Int
+  user                 User                   @relation(fields: [userId], references: [id])
+  userIsInConversation UserIsInConversation[]
+  message              Message[]
+}
+
+model Message {
+  id             Int              @id @default(autoincrement())
+  content        String?          @db.Text
+  fileUrl        String?
+  createdAt      DateTime         @default(now())
+  updateAt       DateTime         @updatedAt()
+  conversationId Int              @unique
+  conversation   Conversation     @relation(fields: [conversationId], references: [id])
+  userId         Int              @unique
+  user           User             @relation(fields: [userId], references: [id])
+  readedMessages ReadedMessages[]
+}
+
+model ReadedMessages {
+  userId    Int     @unique
+  user      User    @relation(fields: [userId], references: [id])
+  messageId Int     @unique
+  message   Message @relation(fields: [messageId], references: [id])
+
+  @@id([userId, messageId])
+}
+
+model Alert {
+  id           Int            @id @default(autoincrement())
+  content      String         @db.Text
+  priority     String         @db.VarChar(20)
+  createdAt    DateTime       @default(now())
+  updateAt     DateTime       @updatedAt
+  userId       Int
+  user         User           @relation(fields: [userId], references: [id])
+  readedAlerts ReadedAlerts[]
+  lineAlert    LineAlert[]
+}
+
+model ReadedAlerts {
+  userId  Int
+  user    User     @relation(fields: [userId], references: [id])
+  alertIs Int
+  alert   Alert    @relation(fields: [alertIs], references: [id])
+  date    DateTime @default(now())
+
+  @@id([userId, alertIs])
+}
+
+model LineAlert {
+  lineId  Int   @unique
+  Line    Line  @relation(fields: [lineId], references: [id])
+  alertId Int   @unique
+  alert   Alert @relation(fields: [alertId], references: [id])
+
+  @@id([lineId, alertId])
+}
+
+model Line {
+  id         Int         @id @default(autoincrement())
+  name       String      @db.VarChar(45)
+  createdAt  DateTime    @default(now())
+  updateAt   DateTime    @updatedAt
+  lineAlerts LineAlert[]
+  trains     Train[]
+}
+
+model Train {
+  id             Int             @id @default(autoincrement())
+  name           String          @db.VarChar(45)
+  createdAt      DateTime        @default(now())
+  updateAt       DateTime        @updatedAt
+  line           Line?           @relation(fields: [lineId], references: [id])
+  lineId         Int?
+  assignedTrains AssignedTrain[]
+}
+
+model AssignedTrain {
+  trainId  Int       @unique
+  train    Train     @relation(fields: [trainId], references: [id])
+  userId   Int       @unique
+  user     User      @relation(fields: [userId], references: [id])
+  starDate DateTime
+  endDate  DateTime?
+
+  @@id([trainId, userId])
+}
