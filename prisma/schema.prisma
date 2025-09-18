@@ -14,25 +14,25 @@ datasource db {
 }
 
 model User {
-  id                   Int                    @id @default(autoincrement())
-  email                String                 @db.VarChar(100)
-  password             String
+  id                   Int                    @id @default(autoincrement()) @db.UnsignedInt() //demander a Baptiste si besoin de @unique
+  email                String                 @unique @db.VarChar(100)
+  password             String                 @db.VarChar(250)
   firstName            String                 @db.VarChar(100)
   lastName             String                 @db.VarChar(100)
-  role                 Role                   @default(NOTEMPLOYED)
-  avatarUrl            String
-  hiringAt             DateTime               @db.Date
+  hiredAt              DateTime               @db.Date
   isConnected          Boolean                @default(false)
   isAvailable          Boolean                @default(false)
-  isActif              Boolean                @default(false)
+  isActive             Boolean                @default(false)
+  avatarUrl            String                 @db.VarChar(200)
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
+  role                 Role
   alerts               Alert[]
   conversations        Conversation[]
   userIsInConversation UserIsInConversation[]
   messages             Message[]
-  readedMessages       ReadedMessages[]
-  readedAlerts         ReadedAlerts[]
+  readMessages         ReadMessages[]
+  readAlerts           ReadAlerts[]
   assignedTrains       AssignedTrain[]
 }
 
@@ -44,104 +44,137 @@ enum Role {
 }
 
 model UserIsInConversation {
-  userId         Int          @unique
-  user           User         @relation(fields: [userId], references: [id])
-  conversationId Int          @unique
+  conversationId Int          @db.UnsignedInt()
   conversation   Conversation @relation(fields: [conversationId], references: [id])
-  isHide         Boolean
+  userId         Int          @db.UnsignedInt()
+  user           User         @relation(fields: [userId], references: [id])
+  isHidden       Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt()
 
   @@id([userId, conversationId])
 }
 
 model Conversation {
-  id                   Int                    @id @default(autoincrement())
+  id                   Int                    @id @default(autoincrement()) @db.UnsignedInt()
+  name                 String                 @db.VarChar(100)
   createdAt            DateTime               @default(now())
-  updateAt             DateTime               @updatedAt()
-  userId               Int
+  updatedAt            DateTime               @updatedAt()
+  userId               Int                    @db.UnsignedInt()
   user                 User                   @relation(fields: [userId], references: [id])
   userIsInConversation UserIsInConversation[]
   message              Message[]
 }
 
 model Message {
-  id             Int              @id @default(autoincrement())
-  content        String?          @db.Text
-  fileUrl        String?
-  createdAt      DateTime         @default(now())
-  updateAt       DateTime         @updatedAt()
-  conversationId Int              @unique
-  conversation   Conversation     @relation(fields: [conversationId], references: [id])
-  userId         Int              @unique
-  user           User             @relation(fields: [userId], references: [id])
-  readedMessages ReadedMessages[]
+  id             Int            @id @default(autoincrement()) @db.UnsignedInt()
+  content        String?        @db.Text
+  fileUrl        String?        @db.VarChar(250)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt()
+  conversationId Int            @db.UnsignedInt()
+  conversation   Conversation   @relation(fields: [conversationId], references: [id])
+  userId         Int            @db.UnsignedInt()
+  user           User           @relation(fields: [userId], references: [id])
+  readMessages   ReadMessages[]
 }
 
-model ReadedMessages {
-  userId    Int     @unique
-  user      User    @relation(fields: [userId], references: [id])
-  messageId Int     @unique
-  message   Message @relation(fields: [messageId], references: [id])
+model ReadMessages {
+  userId    Int      @db.UnsignedInt()
+  user      User     @relation(fields: [userId], references: [id])
+  messageId Int      @db.UnsignedInt()
+  message   Message  @relation(fields: [messageId], references: [id])
+  createdAt DateTime @default(now())
 
   @@id([userId, messageId])
 }
 
 model Alert {
-  id           Int            @id @default(autoincrement())
-  content      String         @db.Text
-  priority     String         @db.VarChar(20)
-  createdAt    DateTime       @default(now())
-  updateAt     DateTime       @updatedAt
-  userId       Int
-  user         User           @relation(fields: [userId], references: [id])
-  readedAlerts ReadedAlerts[]
-  lineAlert    LineAlert[]
+  id         Int          @id @default(autoincrement()) @db.UnsignedInt()
+  content    String       @db.Text
+  priority   Priority
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  userId     Int          @db.UnsignedInt()
+  user       User         @relation(fields: [userId], references: [id])
+  readAlerts ReadAlerts[]
+  lineAlert  LineAlert[]
 }
 
-model ReadedAlerts {
-  userId  Int
+enum Priority {
+  URGENT
+  MEDIUM
+  SOFT
+}
+
+model ReadAlerts {
+  userId  Int      @db.UnsignedInt()
   user    User     @relation(fields: [userId], references: [id])
-  alertIs Int
-  alert   Alert    @relation(fields: [alertIs], references: [id])
+  alertId Int      @db.UnsignedInt()
+  alert   Alert    @relation(fields: [alertId], references: [id])
   date    DateTime @default(now())
 
-  @@id([userId, alertIs])
+  @@id([userId, alertId])
+}
+
+model Line {
+  id         Int         @id @default(autoincrement()) @db.UnsignedInt()
+  name       String      @unique @db.VarChar(45)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  lineAlerts LineAlert[]
+  trains     Train[]
+  travel     Travel?
 }
 
 model LineAlert {
-  lineId  Int   @unique
+  lineId  Int   @db.UnsignedInt()
   Line    Line  @relation(fields: [lineId], references: [id])
-  alertId Int   @unique
+  alertId Int   @db.UnsignedInt()
   alert   Alert @relation(fields: [alertId], references: [id])
 
   @@id([lineId, alertId])
 }
 
-model Line {
-  id         Int         @id @default(autoincrement())
-  name       String      @db.VarChar(45)
-  createdAt  DateTime    @default(now())
-  updateAt   DateTime    @updatedAt
-  lineAlerts LineAlert[]
-  trains     Train[]
-}
-
 model Train {
-  id             Int             @id @default(autoincrement())
-  name           String          @db.VarChar(45)
+  id             Int             @id @default(autoincrement()) @db.UnsignedInt()
+  name           String          @unique @db.VarChar(45)
   createdAt      DateTime        @default(now())
-  updateAt       DateTime        @updatedAt
+  updatedAt      DateTime        @updatedAt
+  lineId         Int?            @db.UnsignedInt()
   line           Line?           @relation(fields: [lineId], references: [id])
-  lineId         Int?
   assignedTrains AssignedTrain[]
+  trainTravel    TrainTravel[]
 }
 
 model AssignedTrain {
-  trainId  Int       @unique
-  train    Train     @relation(fields: [trainId], references: [id])
-  userId   Int       @unique
-  user     User      @relation(fields: [userId], references: [id])
-  starDate DateTime
-  endDate  DateTime?
+  trainId   Int       @db.UnsignedInt()
+  train     Train     @relation(fields: [trainId], references: [id])
+  userId    Int       @db.UnsignedInt()
+  user      User      @relation(fields: [userId], references: [id])
+  startDate DateTime
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
 
   @@id([trainId, userId])
+}
+
+model Travel {
+  id           Int           @id @default(autoincrement()) @db.UnsignedInt()
+  stationOne   String        @db.VarChar(100)
+  stationTwo   String        @db.VarChar(100)
+  duration     Int           @db.UnsignedInt()
+  lineId       Int           @unique @db.UnsignedInt()
+  line         Line          @relation(fields: [lineId], references: [id])
+  trainTravels TrainTravel[]
+}
+
+model TrainTravel {
+  trainId   Int       @db.UnsignedInt()
+  train     Train     @relation(fields: [trainId], references: [id])
+  travelId  Int       @db.UnsignedInt()
+  travel    Travel    @relation(fields: [travelId], references: [id])
+  startTime DateTime?
+
+  @@id([trainId, travelId])
 }
