@@ -21,7 +21,7 @@ model User {
   lastName             String                 @db.VarChar(100)
   hiredAt              DateTime               @db.Date
   isConnected          Boolean                @default(false)
-  isAvailable          Boolean                @default(false)
+  //isAvailable          Boolean                @default(false)
   isActive             Boolean                @default(false)
   avatarUrl            String                 @db.VarChar(200)
   createdAt            DateTime               @default(now())
