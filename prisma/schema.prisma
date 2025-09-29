@@ -14,19 +14,20 @@ datasource db {
 }
 
 model User {
-  id                   Int                    @id @default(autoincrement()) @db.UnsignedInt() //demander a Baptiste si besoin de @unique
+  id                   String                 @id @default(uuid())
   email                String                 @unique @db.VarChar(100)
   password             String                 @db.VarChar(250)
   firstName            String                 @db.VarChar(100)
   lastName             String                 @db.VarChar(100)
-  hiredAt              DateTime               @db.Date
+  hiredAt              DateTime               @db.Date()
+  status               StatusEnum             @default(NOT_CONFIRMED)
   isConnected          Boolean                @default(false)
-  isAvailable          Boolean                @default(false)
+  //isAvailable          Boolean                @default(false)
   isActive             Boolean                @default(false)
-  avatarUrl            String                 @db.VarChar(200)
+  avatarUrl            String?                @db.VarChar(200)
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
-  role                 Role
+  role                 RoleEnum
   alerts               Alert[]
   conversations        Conversation[]
   userIsInConversation UserIsInConversation[]
@@ -36,17 +37,22 @@ model User {
   assignedTrains       AssignedTrain[]
 }
 
-enum Role {
+enum RoleEnum {
   SUPERVISOR
   COORDINATOR
   DRIVER
+}
+
+enum StatusEnum {
+  NOT_CONFIRMED
+  CONFIRMED
   NOTEMPLOYED
 }
 
 model UserIsInConversation {
   conversationId Int          @db.UnsignedInt()
   conversation   Conversation @relation(fields: [conversationId], references: [id])
-  userId         Int          @db.UnsignedInt()
+  userId         String
   user           User         @relation(fields: [userId], references: [id])
   isHidden       Boolean      @default(false)
   createdAt      DateTime     @default(now())
@@ -60,7 +66,7 @@ model Conversation {
   name                 String                 @db.VarChar(100)
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt()
-  userId               Int                    @db.UnsignedInt()
+  userId               String
   user                 User                   @relation(fields: [userId], references: [id])
   userIsInConversation UserIsInConversation[]
   message              Message[]
@@ -74,13 +80,13 @@ model Message {
   updatedAt      DateTime       @updatedAt()
   conversationId Int            @db.UnsignedInt()
   conversation   Conversation   @relation(fields: [conversationId], references: [id])
-  userId         Int            @db.UnsignedInt()
+  userId         String
   user           User           @relation(fields: [userId], references: [id])
   readMessages   ReadMessages[]
 }
 
 model ReadMessages {
-  userId    Int      @db.UnsignedInt()
+  userId    String
   user      User     @relation(fields: [userId], references: [id])
   messageId Int      @db.UnsignedInt()
   message   Message  @relation(fields: [messageId], references: [id])
@@ -95,7 +101,7 @@ model Alert {
   priority   Priority
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
-  userId     Int          @db.UnsignedInt()
+  userId     String
   user       User         @relation(fields: [userId], references: [id])
   readAlerts ReadAlerts[]
   lineAlert  LineAlert[]
@@ -108,7 +114,7 @@ enum Priority {
 }
 
 model ReadAlerts {
-  userId  Int      @db.UnsignedInt()
+  userId  String
   user    User     @relation(fields: [userId], references: [id])
   alertId Int      @db.UnsignedInt()
   alert   Alert    @relation(fields: [alertId], references: [id])
@@ -150,7 +156,7 @@ model Train {
 model AssignedTrain {
   trainId   Int       @db.UnsignedInt()
   train     Train     @relation(fields: [trainId], references: [id])
-  userId    Int       @db.UnsignedInt()
+  userId    String
   user      User      @relation(fields: [userId], references: [id])
   startDate DateTime
   endDate   DateTime?
