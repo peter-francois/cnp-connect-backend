@@ -31,7 +31,9 @@ export class CreateUserDto {
 
   @IsString()
   @IsNotEmpty()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }): string =>
+    typeof value === "string" ? value.trim() : value,
+  )
   lastName: string;
 
   @IsDateString()
