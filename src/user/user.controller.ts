@@ -1,18 +1,10 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  NotFoundException,
-} from "@nestjs/common";
+import { Controller, Get, Post, Body, Param } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 // import { UpdateUserDto } from "./dto/update-user.dto";
-import { ResponseInterface } from "src/interfaces/Data.interface";
+
 import { User } from "@prisma/client";
+import { ResponseInterface } from "src/utils/interfaces/response.interface";
 
 @Controller("users")
 export class UserController {
@@ -23,8 +15,6 @@ export class UserController {
     @Body() createUserDto: CreateUserDto,
   ): Promise<ResponseInterface<User>> {
     const user = await this.userService.create(createUserDto);
-    if (!user) throw new NotFoundException("No user created");
-
     return {
       data: { user },
       message: "Un nouvel utilisation vient d'être créé",
