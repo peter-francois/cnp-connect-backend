@@ -5,6 +5,8 @@ import { Transform } from "class-transformer";
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }): string =>
+    typeof value === "string" ? value.trim() : value,
+  )
   avatarUrl?: string;
 }
