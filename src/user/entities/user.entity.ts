@@ -1,13 +1,7 @@
-export interface User {
-  id: string;
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  hiredAt: Date;
-  isConnected: boolean;
-  isActive: boolean;
-  avatarUrl?: string;
-  createdAt: Date;
-  updatedAt: Date;
+import { StatusEnum, User } from "@prisma/client";
+import { CreateUserDto } from "../dto/create-user.dto";
+
+export interface UserRepository {
+  findOneByEmail(email: string): Promise<User>;
+  create(data: CreateUserDto, status: StatusEnum): Promise<User>;
 }

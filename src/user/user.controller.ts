@@ -2,8 +2,7 @@ import { Controller, Get, Post, Body, Param } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 // import { UpdateUserDto } from "./dto/update-user.dto";
-
-import { User } from "@prisma/client";
+import { StatusEnum, User } from "@prisma/client";
 import { ResponseInterface } from "src/utils/interfaces/response.interface";
 
 @Controller("users")
@@ -13,28 +12,28 @@ export class UserController {
   @Post()
   async create(
     @Body() createUserDto: CreateUserDto,
+    status: StatusEnum = StatusEnum.NOT_CONFIRMED,
   ): Promise<ResponseInterface<User>> {
-    const user = await this.userService.create(createUserDto);
+    const user = await this.userService.createUser(createUserDto, status);
     return {
       data: { user },
       message: "Un nouvel utilisation vient d'être créé",
     };
   }
 
-  @Get()
-  async findAll(): Promise<ResponseInterface<User[]>> {
-    const user = await this.userService.findAll();
-    return {
-      data: { user },
-      message: "Voici tous les utilisateurs",
-    };
-  }
-
+  // @Get()
+  // async findAll(): Promise<ResponseInterface<User[]>> {
+  //   const user = await this.userService.findAll();
+  //   return {
+  //     data: { user },
+  //     message: "Voici tous les utilisateurs",
+  //   };
+  // }
   @Get(":email")
   async findByEmail(
     @Param("email") email: string,
   ): Promise<ResponseInterface<User>> {
-    const user = await this.userService.findOneByEmail(email);
+    const user = await this.userService.getUserByEmail(email);
     return {
       data: { user },
       message: "Voici le user",

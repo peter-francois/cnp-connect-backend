@@ -1,28 +1,23 @@
 import { Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 // import { UpdateUserDto } from "./dto/update-user.dto";
-import { PrismaService } from "prisma/prisma.service";
+// import { PrismaService } from "prisma/prisma.service";
 import { StatusEnum, User } from "@prisma/client";
+import { DatabaseUserRepository } from "./user.repository";
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly userRepository: DatabaseUserRepository) {}
 
-  async create(
-    data: CreateUserDto,
-    status: StatusEnum = StatusEnum.NOT_CONFIRMED,
-  ): Promise<User> {
-    return this.prisma.user.create({
-      data: { ...data, hiredAt: new Date(data.hiredAt), status },
-    });
+  // async findAll() {
+  //   return this.prisma.user.findMany();
+  // }
+
+  async getUserByEmail(email: string): Promise<User> {
+    return this.userRepository.findOneByEmail(email);
   }
-
-  async findAll() {
-    return this.prisma.user.findMany();
-  }
-
-  async findOneByEmail(email: string) {
-    return this.prisma.user.findUniqueOrThrow({ where: { email } });
+  async createUser(data: CreateUserDto, status: StatusEnum): Promise<User> {
+    return this.userRepository.create(data, status);
   }
 
   // update(id: number, updateUserDto: UpdateUserDto) {
