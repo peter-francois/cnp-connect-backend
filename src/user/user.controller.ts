@@ -1,14 +1,16 @@
-import { Controller, Get, Post, Body, Param } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 // import { UpdateUserDto } from "./dto/update-user.dto";
 import { StatusEnum, User } from "@prisma/client";
 import { ResponseInterface } from "src/utils/interfaces/response.interface";
+import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
 
 @Controller("users")
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(AccesTokenGuard)
   @Post()
   async create(
     @Body() createUserDto: CreateUserDto,
