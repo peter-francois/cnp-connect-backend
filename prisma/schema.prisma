@@ -35,6 +35,7 @@ model User {
   readMessages         ReadMessages[]
   readAlerts           ReadAlerts[]
   assignedTrains       AssignedTrain[]
+  tokens               Token[]
 }
 
 enum RoleEnum {
@@ -46,7 +47,24 @@ enum RoleEnum {
 enum StatusEnum {
   NOT_CONFIRMED
   CONFIRMED
-  NOTEMPLOYED
+  NOTEMPLOYED // deactivate reset password
+}
+
+model Token {
+  token     String
+  type      TokenTypeEnum
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  createdAt DateTime      @default(now())
+  expiresAt DateTime?
+
+  @@id([type, userId])
+}
+
+enum TokenTypeEnum {
+  REFRESH_TOKEN
+  RESET_PASSWORD
+  ACTIVATE_PASSWORD
 }
 
 model UserIsInConversation {

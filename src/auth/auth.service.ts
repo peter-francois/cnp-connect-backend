@@ -4,7 +4,7 @@ import { CustomException } from "src/utils/custom-exception";
 
 @Injectable()
 export class AuthService {
-  async hash(data: string): Promise<string> {
+  hash(data: string): Promise<string> {
     try {
       return argon2.hash(data);
     } catch {
@@ -12,7 +12,7 @@ export class AuthService {
     }
   }
 
-  async compare(hashed: string, noHashed: string): Promise<boolean> {
+  compare(hashed: string, noHashed: string): Promise<boolean> {
     try {
       return argon2.verify(hashed, noHashed);
     } catch {

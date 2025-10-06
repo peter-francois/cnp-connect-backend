@@ -16,10 +16,11 @@ export class AuthController {
     private readonly tokenService: TokenService,
   ) {}
 
-  @Post("signin") //stdfDVZS-6qdfb
+  @Post("signin")
   async signin(@Body() body: SigninDto): Promise<ResponseInterface<string>> {
     const user: User = await this.userService.getUserByEmail(body.email);
     // compare hash
+    console.log(await this.authService.hash(body.password));
     const comparePassword: boolean = await this.authService.compare(
       user.password,
       body.password,
@@ -39,7 +40,25 @@ export class AuthController {
       secret: process.env.ACCESS_JWT_SECRET,
     });
 
+    const refreshToken: string = await this.tokenService.generateJwt(user, {
+      algorithm: "HS256",
+      expiresIn: "1d",
+      secret: process.env.REFRESH_JWT_SECRET,
+    });
+
+    // hash refresh token
+
+    const hahedRefreshToken = await this.authService.hash(refreshToken);
+
+    // upsert refresh token
+    // no await so, the token can be inserted in db before return => performance gain, but if exeption => client don't know about it
+
+    this.tokenService.upsert(user.id, hahedRefreshToken);
+
     // insert refresh token hashed in DB
-    return { data: { accessToken }, message: "Connexion réussis." };
+    return {
+      data: { accessToken, refreshToken },
+      message: "Connexion réussis.",
+    };
   }
 }
