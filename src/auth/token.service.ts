@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { JwtService, JwtSignOptions } from "@nestjs/jwt";
 import { User, TokenTypeEnum, Token } from "@prisma/client";
 import { PrismaService } from "prisma/prisma.service";
+import { PayloadInterface } from "./interfaces/payload.interface";
 
 // add salt
 
@@ -13,7 +14,7 @@ export class TokenService {
   ) {}
 
   async generateJwt(user: User, options: JwtSignOptions): Promise<string> {
-    const payload = { sub: user.id, role: user.role };
+    const payload: PayloadInterface = { id: user.id, role: user.role };
     return await this.jwtService.signAsync(payload, options);
   }
 
