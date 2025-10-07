@@ -10,33 +10,34 @@ import { PayloadInterface } from "../interfaces/payload.interface";
 import { CustomException } from "src/utils/custom-exception";
 
 @Injectable()
-export class AccesTokenGuard implements CanActivate {
+export class RefreshTokenGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const refreshToken = this.extractTokenFromHeader(request);
 
-    if (!token) {
+    if (!refreshToken) {
       throw new CustomException(
         "Unauthorized exception",
         HttpStatus.UNAUTHORIZED,
-        "ATG-ca-1",
+        "RTG-ca-1",
       );
     }
     try {
       const payload: PayloadInterface = await this.jwtService.verifyAsync(
-        token,
-        { secret: process.env.ACCESS_JWT_SECRET },
+        refreshToken,
+        { secret: process.env.REFRESH_JWT_SECRET },
       );
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request["user"] = payload;
+      request["refreshToken"] = refreshToken;
     } catch {
       throw new CustomException(
         "Unauthorized exception",
         HttpStatus.UNAUTHORIZED,
-        "ATG-ca-2",
+        "RTG-ca-2",
       );
     }
     return true;

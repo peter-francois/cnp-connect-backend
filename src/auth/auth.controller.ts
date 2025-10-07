@@ -1,4 +1,11 @@
-import { Controller, Post, Body, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Body,
+  HttpStatus,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { UserService } from "src/user/user.service";
 import { SigninDto } from "./dto/signin.dto";
@@ -6,6 +13,8 @@ import { User } from "@prisma/client";
 import { CustomException } from "src/utils/custom-exception";
 import { TokenService } from "./token.service";
 import { ResponseInterface } from "src/utils/interfaces/response.interface";
+import { type RequestWithPayloadAndRefreshInterface } from "./interfaces/payload.interface";
+import { RefreshTokenGuard } from "./guard/refresh-token-guard";
 //import { ResponseInterface } from "src/utils/interfaces/response.interface";
 
 @Controller("auth")
@@ -20,7 +29,6 @@ export class AuthController {
   async signin(@Body() body: SigninDto): Promise<ResponseInterface<string>> {
     const user: User = await this.userService.getUserByEmail(body.email);
     // compare hash
-    console.log(await this.authService.hash(body.password));
     const comparePassword: boolean = await this.authService.compare(
       user.password,
       body.password,
@@ -33,20 +41,10 @@ export class AuthController {
         "AC-s-1",
       );
 
-    // generate access token and refresh token
-    const accessToken: string = await this.tokenService.generateJwt(user, {
-      algorithm: "HS256",
-      expiresIn: "15m",
-      secret: process.env.ACCESS_JWT_SECRET,
-    });
-
-    const refreshToken: string = await this.tokenService.generateJwt(user, {
-      algorithm: "HS256",
-      expiresIn: "1d",
-      secret: process.env.REFRESH_JWT_SECRET,
-    });
-
-    // hash refresh token
+    const { accessToken, refreshToken } = await this.tokenService.createTokens(
+      user.id,
+      user.role,
+    );
 
     const hahedRefreshToken = await this.authService.hash(refreshToken);
 
@@ -56,6 +54,50 @@ export class AuthController {
     this.tokenService.upsert(user.id, hahedRefreshToken);
 
     // insert refresh token hashed in DB
+    return {
+      data: { accessToken, refreshToken },
+      message: "Connexion réussis.",
+    };
+  }
+
+  @UseGuards(RefreshTokenGuard)
+  @Post("refreshToken")
+  async refrechToken(
+    @Req() req: RequestWithPayloadAndRefreshInterface,
+  ): Promise<ResponseInterface<string>> {
+    // get refresh from DB
+    if (!req.user)
+      throw new CustomException(
+        "Unauthorized",
+        HttpStatus.UNAUTHORIZED,
+        "AC-rt-1",
+      );
+    const oldHashedRefresh = await this.tokenService.getRefreshToken(
+      req.user.id,
+    );
+
+    //compare tokens
+    const compareTokens: boolean = await this.authService.compare(
+      oldHashedRefresh.token,
+      req.refreshToken,
+    );
+
+    if (!compareTokens)
+      throw new CustomException(
+        "Unauthorized",
+        HttpStatus.UNAUTHORIZED,
+        "AC-rt-2",
+      );
+
+    const { accessToken, refreshToken } = await this.tokenService.createTokens(
+      req.user.id,
+      req.user.role,
+    );
+
+    const hahedRefreshToken = await this.authService.hash(refreshToken);
+
+    this.tokenService.upsert(req.user.id, hahedRefreshToken);
+
     return {
       data: { accessToken, refreshToken },
       message: "Connexion réussis.",
