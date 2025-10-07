@@ -2,6 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
 import { PrismaExeptionFilter } from "./utils/filters/prisma-exeption.filter";
+import { CustomExceptionFilter } from "./utils/filters/custom-exception.filter";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,7 +13,7 @@ async function bootstrap() {
         process.env.NODE_ENV === "development" ? false : true,
     }),
   );
-  app.useGlobalFilters(new PrismaExeptionFilter());
+  app.useGlobalFilters(new PrismaExeptionFilter(), new CustomExceptionFilter());
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
