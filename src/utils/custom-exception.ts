@@ -8,6 +8,7 @@ export class CustomException extends HttpException {
   ) {
     super(response, status);
   }
+
   getErrorCode(): string {
     return this.errorCode;
   }

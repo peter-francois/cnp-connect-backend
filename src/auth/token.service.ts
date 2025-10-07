@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService, JwtSignOptions } from "@nestjs/jwt";
-import { User, TokenTypeEnum, Token } from "@prisma/client";
+import { TokenTypeEnum, Token, RoleEnum } from "@prisma/client";
 import { PrismaService } from "prisma/prisma.service";
 import { PayloadInterface } from "./interfaces/payload.interface";
+import { TokensInterface } from "./interfaces/token.interface";
 
 // add salt
 
@@ -13,8 +14,10 @@ export class TokenService {
     private prisma: PrismaService,
   ) {}
 
-  async generateJwt(user: User, options: JwtSignOptions): Promise<string> {
-    const payload: PayloadInterface = { id: user.id, role: user.role };
+  async generateJwt(
+    payload: PayloadInterface,
+    options: JwtSignOptions,
+  ): Promise<string> {
     return await this.jwtService.signAsync(payload, options);
   }
 
@@ -29,5 +32,38 @@ export class TokenService {
       where: { type_userId: { type, userId } },
       update: { token, expiresAt },
     });
+  }
+
+  async getRefreshToken(
+    userId: string,
+    type: TokenTypeEnum = TokenTypeEnum.REFRESH_TOKEN,
+  ): Promise<Token> {
+    return await this.prisma.token.findUniqueOrThrow({
+      where: { type_userId: { type, userId } },
+    });
+  }
+
+  async createTokens(id: string, role: RoleEnum): Promise<TokensInterface> {
+    // generate access token and refresh token
+    const accessToken: string = await this.generateJwt(
+      { id, role },
+
+      {
+        algorithm: "HS256",
+        expiresIn: "15m",
+        secret: process.env.ACCESS_JWT_SECRET,
+      },
+    );
+
+    const refreshToken: string = await this.generateJwt(
+      { id, role },
+      {
+        algorithm: "HS256",
+        expiresIn: "1d",
+        secret: process.env.REFRESH_JWT_SECRET,
+      },
+    );
+
+    return { accessToken, refreshToken };
   }
 }
