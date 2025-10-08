@@ -16,7 +16,7 @@ export class AuthService {
     try {
       return argon2.verify(hashed, noHashed);
     } catch {
-      throw new CustomException("BadRequest", HttpStatus.BAD_REQUEST, "AS-c-1"); // a voir si c'est util
+      throw new CustomException("BadRequest", HttpStatus.BAD_REQUEST, "AS-c-1"); // a voir si c'est util revoir
     }
   }
 }

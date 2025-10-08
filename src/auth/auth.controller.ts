@@ -14,8 +14,7 @@ import { CustomException } from "src/utils/custom-exception";
 import { TokenService } from "./token.service";
 import { ResponseInterface } from "src/utils/interfaces/response.interface";
 import { type RequestWithPayloadAndRefreshInterface } from "./interfaces/payload.interface";
-import { RefreshTokenGuard } from "./guard/refresh-token-guard";
-//import { ResponseInterface } from "src/utils/interfaces/response.interface";
+import { RefreshTokenGuard } from "./guard/refresh-token.guard";
 
 @Controller("auth")
 export class AuthController {
@@ -41,11 +40,13 @@ export class AuthController {
         "AC-s-1",
       );
 
+    // create accessToken and refreshToken
     const { accessToken, refreshToken } = await this.tokenService.createTokens(
       user.id,
       user.role,
     );
 
+    // hash refreshToken
     const hahedRefreshToken = await this.authService.hash(refreshToken);
 
     // upsert refresh token
@@ -53,7 +54,6 @@ export class AuthController {
 
     this.tokenService.upsert(user.id, hahedRefreshToken);
 
-    // insert refresh token hashed in DB
     return {
       data: { accessToken, refreshToken },
       message: "Connexion réussis.",
@@ -88,7 +88,7 @@ export class AuthController {
         HttpStatus.UNAUTHORIZED,
         "AC-rt-2",
       );
-
+    // create accessToken and refreshToken
     const { accessToken, refreshToken } = await this.tokenService.createTokens(
       req.user.id,
       req.user.role,
