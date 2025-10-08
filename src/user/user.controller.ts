@@ -1,19 +1,10 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  UseGuards,
-  HttpStatus,
-} from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 // import { UpdateUserDto } from "./dto/update-user.dto";
 import { StatusEnum, User } from "@prisma/client";
 import { ResponseInterface } from "src/utils/interfaces/response.interface";
 import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
-import { CustomException } from "src/utils/custom-exception";
 
 @Controller("users")
 export class UserController {
@@ -26,13 +17,6 @@ export class UserController {
     status: StatusEnum = StatusEnum.NOT_CONFIRMED,
   ): Promise<ResponseInterface<User>> {
     const user = await this.userService.createUser(createUserDto, status);
-
-    if (!user)
-      throw new CustomException(
-        "Unauthorized",
-        HttpStatus.UNAUTHORIZED,
-        "UC-c-1",
-      );
     return {
       data: { user },
       message: "Un nouvel utilisation vient d'être créé",
@@ -47,16 +31,6 @@ export class UserController {
   //     message: "Voici tous les utilisateurs",
   //   };
   // }
-  @Get(":email")
-  async findByEmail(
-    @Param("email") email: string,
-  ): Promise<ResponseInterface<User>> {
-    const user = await this.userService.getUserByEmail(email);
-    return {
-      data: { user },
-      message: "Voici le user",
-    };
-  }
 
   // @Get(":id")
   // findOne(@Param("id") id: string) {

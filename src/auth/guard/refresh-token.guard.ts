@@ -15,7 +15,8 @@ export class RefreshTokenGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
-    const refreshToken = this.extractTokenFromHeader(request);
+    const refreshToken: string | undefined =
+      this.extractTokenFromHeader(request);
 
     if (!refreshToken) {
       throw new CustomException(
@@ -45,6 +46,6 @@ export class RefreshTokenGuard implements CanActivate {
 
   private extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(" ") ?? [];
-    return type === "Bearer" ? token : undefined;
+    return type === process.env.TOKEN_TYPE ? token : undefined;
   }
 }

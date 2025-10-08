@@ -5,7 +5,7 @@ import { PrismaService } from "prisma/prisma.service";
 import { PayloadInterface } from "./interfaces/payload.interface";
 import { TokensInterface } from "./interfaces/token.interface";
 
-// add salt
+// add salt ?
 
 @Injectable()
 export class TokenService {
@@ -44,10 +44,8 @@ export class TokenService {
   }
 
   async createTokens(id: string, role: RoleEnum): Promise<TokensInterface> {
-    // generate access token and refresh token
     const accessToken: string = await this.generateJwt(
       { id, role },
-
       {
         algorithm: "HS256",
         expiresIn: "15m",

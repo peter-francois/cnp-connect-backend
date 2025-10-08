@@ -1,5 +1,5 @@
 import { StatusEnum, User } from "@prisma/client";
-import { UserRepository } from "./entities/user.entity";
+import { UserRepositoryInterface } from "./interface/user.interface";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { PrismaService } from "prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
@@ -7,7 +7,7 @@ import { Injectable } from "@nestjs/common";
 // a revoir
 
 @Injectable()
-export class DatabaseUserRepository implements UserRepository {
+export class DatabaseUserRepository implements UserRepositoryInterface {
   constructor(private readonly prisma: PrismaService) {}
 
   async findOneByEmail(email: string): Promise<User> {

@@ -15,7 +15,7 @@ export class AccesTokenGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const token: string | undefined = this.extractTokenFromHeader(request);
 
     if (!token) {
       throw new CustomException(
@@ -41,9 +41,9 @@ export class AccesTokenGuard implements CanActivate {
     }
     return true;
   }
-
+  // move this methode somewhere because it's use in both guards
   private extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(" ") ?? [];
-    return type === "Bearer" ? token : undefined;
+    return type === process.env.TOKEN_TYPE ? token : undefined;
   }
 }
