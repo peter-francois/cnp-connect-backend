@@ -16,7 +16,9 @@ export class UserService {
   async getUserByEmail(email: string): Promise<User> {
     return this.userRepository.findOneByEmail(email);
   }
+
   async createUser(data: CreateUserDto, status: StatusEnum): Promise<User> {
+    
     return this.userRepository.create(data, status);
   }
 
@@ -28,3 +30,5 @@ export class UserService {
   //   return `This action removes a #${id} user`;
   // }
 }
+
+
