@@ -8,14 +8,19 @@ import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
 import { PayloadInterface } from "../interfaces/payload.interface";
 import { CustomException } from "src/utils/custom-exception";
+import { TokenService } from "../token.service";
 
 @Injectable()
 export class AccesTokenGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private readonly tokenService: TokenService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
-    const token: string | undefined = this.extractTokenFromHeader(request);
+    const token: string | undefined =
+      this.tokenService.extractTokenFromHeader(request);
 
     if (!token) {
       throw new CustomException(
@@ -40,10 +45,5 @@ export class AccesTokenGuard implements CanActivate {
       );
     }
     return true;
-  }
-  // move this methode somewhere because it's use in both guards
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(" ") ?? [];
-    return type === process.env.TOKEN_TYPE ? token : undefined;
   }
 }

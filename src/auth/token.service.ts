@@ -4,6 +4,7 @@ import { TokenTypeEnum, Token, RoleEnum } from "@prisma/client";
 import { PrismaService } from "prisma/prisma.service";
 import { PayloadInterface } from "./interfaces/payload.interface";
 import { TokensInterface } from "./interfaces/token.interface";
+import { Request } from "express";
 
 // add salt ?
 
@@ -63,5 +64,9 @@ export class TokenService {
     );
 
     return { accessToken, refreshToken };
+  }
+  extractTokenFromHeader(request: Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(" ") ?? [];
+    return type === process.env.TOKEN_TYPE ? token : undefined;
   }
 }
