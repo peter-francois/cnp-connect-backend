@@ -5,17 +5,26 @@ import { CreateUserDto } from "./dto/create-user.dto";
 import { StatusEnum, User } from "@prisma/client";
 import { ResponseInterface } from "src/utils/interfaces/response.interface";
 import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
+import { SupervisorGuard } from "src/auth/guard/supervisor.guard";
+import { AuthService } from "src/auth/auth.service";
 
+@UseGuards(AccesTokenGuard)
 @Controller("users")
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+  ) {}
 
-  @UseGuards(AccesTokenGuard)
+  @UseGuards(SupervisorGuard)
   @Post()
   async create(
     @Body() createUserDto: CreateUserDto,
     status: StatusEnum = StatusEnum.NOT_CONFIRMED,
   ): Promise<ResponseInterface<User>> {
+    createUserDto.password = await this.authService.hash(
+      createUserDto.password,
+    );
     const user = await this.userService.createUser(createUserDto, status);
     return {
       data: { user },

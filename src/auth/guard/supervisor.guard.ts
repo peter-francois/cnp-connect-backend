@@ -11,7 +11,7 @@ import { CustomException } from "src/utils/custom-exception";
 import { TokenService } from "../token.service";
 
 @Injectable()
-export class RefreshTokenGuard implements CanActivate {
+export class SupervisorGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private readonly tokenService: TokenService,
@@ -19,32 +19,35 @@ export class RefreshTokenGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
-    const refreshToken: string | undefined =
+    const token: string | undefined =
       this.tokenService.extractTokenFromHeader(request);
 
-    if (!refreshToken) {
+    if (!token) {
       throw new CustomException(
         "Unauthorized exception",
         HttpStatus.UNAUTHORIZED,
-        "RTG-ca-1",
+        "SG-ca-1",
       );
     }
+    let payload: PayloadInterface;
     try {
-      const payload: PayloadInterface = await this.jwtService.verifyAsync(
-        refreshToken,
-        { secret: process.env.REFRESH_JWT_SECRET },
-      );
-      // 💡 We're assigning the payload to the request object here
-      // so that we can access it in our route handlers
-      request["user"] = payload;
-      request["refreshToken"] = refreshToken;
+      payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.ACCESS_JWT_SECRET,
+      });
     } catch {
       throw new CustomException(
         "Unauthorized exception",
         HttpStatus.UNAUTHORIZED,
-        "RTG-ca-2",
+        "ATG-ca-2",
       );
     }
+    const role = payload.role;
+    if (role !== "SUPERVISOR")
+      throw new CustomException(
+        "Unauthorized exception",
+        HttpStatus.UNAUTHORIZED,
+        "ATG-ca-3",
+      );
     return true;
   }
 }
