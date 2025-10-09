@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import * as argon2 from "argon2";
-import { CustomException } from "src/utils/custom-exception";
+import { CustomException } from "../utils/custom-exception";
 
 @Injectable()
 export class AuthService {

@@ -4,7 +4,7 @@ import { CreateUserDto } from "./dto/create-user.dto";
 // import { PrismaService } from "prisma/prisma.service";
 import { StatusEnum, User } from "@prisma/client";
 import { DatabaseUserRepository } from "./user.repository";
-import { AuthService } from "src/auth/auth.service";
+import { AuthService } from "../auth/auth.service";
 
 @Injectable()
 export class UserService {

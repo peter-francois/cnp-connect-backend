@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService, JwtSignOptions } from "@nestjs/jwt";
 import { TokenTypeEnum, Token, RoleEnum } from "@prisma/client";
-import { PrismaService } from "prisma/prisma.service";
+import { PrismaService } from "../../prisma/prisma.service";
 import { PayloadInterface } from "./interfaces/payload.interface";
 import { TokensInterface } from "./interfaces/token.interface";
 import { Request } from "express";

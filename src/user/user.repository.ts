@@ -1,7 +1,7 @@
 import { StatusEnum, User } from "@prisma/client";
 import { UserRepositoryInterface } from "./interface/user.interface";
 import { CreateUserDto } from "./dto/create-user.dto";
-import { PrismaService } from "prisma/prisma.service";
+import { PrismaService } from "../../prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
 
 // a revoir
