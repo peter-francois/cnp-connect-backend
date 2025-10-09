@@ -4,6 +4,7 @@ import { CreateUserDto } from "../dto/create-user.dto";
 export interface UserRepositoryInterface {
   findOneByEmail(email: string): Promise<User>;
   create(data: CreateUserDto, status: StatusEnum): Promise<User>;
+  findMany(): Promise<User[]>;
 }
 
 // export interface UserRepositoryInterface<T> {
