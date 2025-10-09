@@ -11,7 +11,7 @@ import { CustomException } from "src/utils/custom-exception";
 import { TokenService } from "../token.service";
 
 @Injectable()
-export class SupervisorGuard implements CanActivate {
+export class CoordinatorGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private readonly tokenService: TokenService,
@@ -26,7 +26,7 @@ export class SupervisorGuard implements CanActivate {
       throw new CustomException(
         "Unauthorized exception",
         HttpStatus.UNAUTHORIZED,
-        "SG-ca-1",
+        "CG-ca-1",
       );
     }
     let payload: PayloadInterface;
@@ -38,15 +38,15 @@ export class SupervisorGuard implements CanActivate {
       throw new CustomException(
         "Unauthorized exception",
         HttpStatus.UNAUTHORIZED,
-        "SG-ca-2",
+        "CG-ca-2",
       );
     }
     const role = payload.role;
-    if (role !== "SUPERVISOR")
+    if (role !== "COORDINATOR")
       throw new CustomException(
         "You do not have permission to access this resource",
         HttpStatus.FORBIDDEN,
-        "SG-ca-3",
+        "CG-ca-3",
       );
     return true;
   }
