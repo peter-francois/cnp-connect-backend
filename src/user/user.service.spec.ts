@@ -26,6 +26,11 @@ describe("userService", () => {
     }).compile();
     userService = moduleRef.get<UserService>(UserService);
   });
+
+  it("Should be defined", () => {
+    expect(userService).toBeDefined();
+  });
+
   //   it("ok", async () => {
   //     const response = await userService.getUserByEmail("peter@hot.fr");
   //     console.log("🚀 ~ user.service.spec.ts:29 ~ response:", response);
