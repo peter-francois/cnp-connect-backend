@@ -54,6 +54,8 @@ export class AuthController {
 
     this.tokenService.upsert(user.id, hahedRefreshToken);
 
+    //changement de isConnected
+
     return {
       data: { accessToken, refreshToken },
       message: "Connexion réussis.",
