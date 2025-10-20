@@ -11,3 +11,8 @@ export interface UserRepositoryInterface {
 //   findOneByEmail(email: string): Promise<User>;
 //   create(data: T, status: StatusEnum): Promise<User>;
 // }
+
+export type UserSigninResponse = Omit<
+  User,
+  "password" | "createdAt" | "updatedAt"
+>;

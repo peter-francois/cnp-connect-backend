@@ -22,4 +22,11 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
   async findMany(): Promise<User[]> {
     return this.prisma.user.findMany();
   }
+
+  async toUserConnectedStatus(id: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { isConnected: true },
+    });
+  }
 }

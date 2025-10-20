@@ -15,6 +15,7 @@ import { TokenService } from "./token.service";
 import { ResponseInterface } from "src/utils/interfaces/response.interface";
 import { type RequestWithPayloadAndRefreshInterface } from "./interfaces/payload.interface";
 import { RefreshTokenGuard } from "./guard/refresh-token.guard";
+import { UserSigninResponse } from "src/user/interface/user.interface";
 
 @Controller("auth")
 export class AuthController {
@@ -25,8 +26,10 @@ export class AuthController {
   ) {}
 
   @Post("signin")
-  async signin(@Body() body: SigninDto): Promise<ResponseInterface<string>> {
-    const user: User = await this.userService.getUserByEmail(body.email);
+  async signin(
+    @Body() body: SigninDto,
+  ): Promise<ResponseInterface<string | UserSigninResponse>> {
+    let user: User = await this.userService.getUserByEmail(body.email);
     // compare hash
     const comparePassword: boolean = await this.authService.compare(
       user.password,
@@ -40,6 +43,12 @@ export class AuthController {
         "AC-s-1",
       );
 
+    //changement de isConnected
+    user = await this.userService.toUserConnectedStatus(user.id);
+
+    // remove "password" | "createdAt" | "updatedAt" from user before send it to front
+    const userSigninResponse = this.userService.signinResponse(user);
+
     // create accessToken and refreshToken
     const { accessToken, refreshToken } = await this.tokenService.createTokens(
       user.id,
@@ -51,13 +60,10 @@ export class AuthController {
 
     // upsert refresh token
     // no await so, the token can be inserted in db before return => performance gain, but if exeption => client don't know about it
-
     this.tokenService.upsert(user.id, hahedRefreshToken);
 
-    //changement de isConnected
-
     return {
-      data: { accessToken, refreshToken },
+      data: { accessToken, refreshToken, userSigninResponse },
       message: "Connexion réussis.",
     };
   }
