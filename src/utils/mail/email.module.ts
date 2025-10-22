@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { MailerModule } from "@nestjs-modules/mailer";
-import { SendEmailService } from "./sendEmail.service";
+import { EmailService } from "./email.service";
 
 @Module({
   imports: [
@@ -13,13 +13,17 @@ import { SendEmailService } from "./sendEmail.service";
           user: "962c58002@smtp-brevo.com",
           pass: "bxZV9kESv0JUTC5j",
         },
+        // @dev controler avec formateur l'erreur de certificat: "self-signed certificate in certificate chain"
+        tls: {
+          rejectUnauthorized: false, // ⚠️ désactive la vérif SSL
+        },
       },
       defaults: {
         from: '"CNP Connect" <nicolassam33@gmail.com>',
       },
     }),
   ],
-  providers: [SendEmailService],
-  exports: [SendEmailService],
+  providers: [EmailService],
+  exports: [EmailService],
 })
-export class sendMailModule {}
+export class EmailModule {}

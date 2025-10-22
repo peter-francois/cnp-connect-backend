@@ -3,7 +3,10 @@ import { JwtService, JwtSignOptions } from "@nestjs/jwt";
 import { TokenTypeEnum, Token, RoleEnum } from "@prisma/client";
 import { PrismaService } from "prisma/prisma.service";
 import { PayloadInterface } from "./interfaces/payload.interface";
-import { TokensInterface } from "./interfaces/token.interface";
+import {
+  EmailTokensInterface,
+  TokensInterface,
+} from "./interfaces/token.interface";
 import { Request } from "express";
 import CryptoJS from "crypto-js";
 import { CustomException } from "src/utils/custom-exception";
@@ -74,19 +77,23 @@ export class TokenService {
     return type === process.env.TOKEN_TYPE ? token : undefined;
   }
 
-  async generateEmailToken(userId: string): Promise<{
-    token: string;
-    hashedToken: string;
-  }> {
+  async generateEmailToken(userId: string): Promise<EmailTokensInterface> {
     const secretKey = process.env.CRYPTO_SECRET;
+
     if (!secretKey)
       throw new CustomException(
         "Unauthorized",
         HttpStatus.UNAUTHORIZED,
         "TS-gte-1",
       );
+
     const token = CryptoJS.AES.encrypt(userId, secretKey).toString();
-    const hashedToken = await this.authService.hash(token);
-    return { token, hashedToken };
+    const urlSafeToken = token
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+    const hashedToken = await this.authService.hash(urlSafeToken);
+
+    return { urlSafeToken, hashedToken };
   }
 }
