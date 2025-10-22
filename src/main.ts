@@ -13,6 +13,7 @@ async function bootstrap() {
         process.env.NODE_ENV === "development" ? false : true,
     }),
   );
+  app.enableCors();
   app.useGlobalFilters(new PrismaExeptionFilter(), new CustomExceptionFilter());
   await app.listen(process.env.PORT ?? 3000);
 }
