@@ -7,8 +7,10 @@ import { ResponseInterface } from "src/utils/interfaces/response.interface";
 import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
 import { SupervisorGuard } from "src/auth/guard/supervisor.guard";
 import { CoordinatorGuard } from "src/auth/guard/coordinator.guard";
+import { createCipheriv, randomBytes, scrypt } from "crypto";
+import { promisify } from "util";
 
-@UseGuards(AccesTokenGuard)
+// @UseGuards(AccesTokenGuard)
 @Controller("users")
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -26,9 +28,23 @@ export class UserController {
     };
   }
 
-  @UseGuards(CoordinatorGuard)
+  // @UseGuards(CoordinatorGuard)
   @Get()
   async findAll(): Promise<ResponseInterface<User[]>> {
+    const iv = randomBytes(16);
+    const password = "Password used to generate key";
+
+    // The key length is dependent on the algorithm.
+    // In this case for aes256, it is 32 bytes.
+    const key = (await promisify(scrypt)(password, "salt", 32)) as Buffer;
+    const cipher = createCipheriv("aes-256-ctr", key, iv);
+
+    const textToEncrypt = "Nest";
+    const encryptedText = Buffer.concat([
+      cipher.update(textToEncrypt),
+      cipher.final(),
+    ]);
+    console.log("🚀 ~ user.controller.ts:47 ~ findAll ~ encryptedText:", encryptedText)
     const users: User[] = await this.userService.findAll();
     return {
       data: { users },

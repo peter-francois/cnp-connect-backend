@@ -10,6 +10,7 @@ import { Injectable } from "@nestjs/common";
 export class DatabaseUserRepository implements UserRepositoryInterface {
   constructor(private readonly prisma: PrismaService) {}
 
+  // @dev changé le prima pour ne pas prendre le createdat et le updated at?
   async findOneByEmail(email: string): Promise<User> {
     return this.prisma.user.findUniqueOrThrow({ where: { email } });
   }
@@ -23,7 +24,7 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
     return this.prisma.user.findMany();
   }
 
-  async toUserConnectedStatus(id: string) {
+  async connected(id: string) {
     return this.prisma.user.update({
       where: { id },
       data: { isConnected: true },

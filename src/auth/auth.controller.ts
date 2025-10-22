@@ -44,7 +44,7 @@ export class AuthController {
       );
 
     //changement de isConnected
-    user = await this.userService.toUserConnectedStatus(user.id);
+    user = await this.userService.connected(user.id);
 
     // remove "password" | "createdAt" | "updatedAt" from user before send it to front
     const userSigninResponse = this.userService.signinResponse(user);

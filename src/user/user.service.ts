@@ -6,6 +6,7 @@ import { StatusEnum, User } from "@prisma/client";
 import { DatabaseUserRepository } from "./user.repository";
 import { AuthService } from "src/auth/auth.service";
 import { UserSigninResponse } from "./interface/user.interface";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Injectable()
 export class UserService {
@@ -32,13 +33,13 @@ export class UserService {
     return rest;
   }
 
-  async toUserConnectedStatus(id: string): Promise<User> {
-    return await this.userRepository.toUserConnectedStatus(id);
+  async connected(id: string): Promise<User> {
+    return await this.userRepository.connected(id);
   }
 
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
+  update(id: number, updateUserDto: UpdateUserDto) {
+    return `This action updates a #${id} user`;
+  }
 
   // remove(id: number) {
   //   return `This action removes a #${id} user`;
