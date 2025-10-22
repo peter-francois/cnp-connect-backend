@@ -19,6 +19,7 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
       data: { ...data, hiredAt: new Date(data.hiredAt), status },
     });
   }
+
   async findMany(): Promise<User[]> {
     return this.prisma.user.findMany();
   }

@@ -49,7 +49,8 @@ export class TokenService {
       { id, role },
       {
         algorithm: "HS256",
-        expiresIn: "15m",
+        // expiresIn: "15m",
+        expiresIn: "1h",
         secret: process.env.ACCESS_JWT_SECRET,
       },
     );
