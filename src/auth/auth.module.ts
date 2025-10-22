@@ -4,6 +4,7 @@ import { AuthController } from "./auth.controller";
 import { UserModule } from "src/user/user.module";
 import { TokenService } from "./token.service";
 import { JwtModule } from "@nestjs/jwt";
+import { sendMailModule } from "src/utils/mail/sendEmail.module";
 
 @Module({
   controllers: [AuthController],
@@ -13,6 +14,7 @@ import { JwtModule } from "@nestjs/jwt";
     JwtModule.register({
       global: true,
     }),
+    sendMailModule,
   ],
   exports: [AuthService],
 })
