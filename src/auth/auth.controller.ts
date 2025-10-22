@@ -12,7 +12,7 @@ import { SigninDto } from "./dto/signin.dto";
 import { User } from "@prisma/client";
 import { CustomException } from "src/utils/custom-exception";
 import { TokenService } from "./token.service";
-import { ResponseInterface } from "src/utils/interfaces/response.interface";
+import { ResponseInterface , ResponseInterfaceMessage } from "src/utils/interfaces/response.interface";
 import { type RequestWithPayloadAndRefreshInterface } from "./interfaces/payload.interface";
 import { RefreshTokenGuard } from "./guard/refresh-token.guard";
 import { SendEmailService } from "src/utils/mail/sendEmail.service";
@@ -65,7 +65,7 @@ export class AuthController {
   }
 
   @UseGuards(RefreshTokenGuard)
-  @Post("refreshToken")
+  @Post("refresh-token")
   async refrechToken(
     @Req() req: RequestWithPayloadAndRefreshInterface,
   ): Promise<ResponseInterface<string>> {
@@ -111,17 +111,18 @@ export class AuthController {
   @Post("reset-password")
   async sendResetPasswordEmail(
     @Body() body: { email: string },
-  ): Promise<{ message: string }> {
+  ): Promise<ResponseInterfaceMessage> {
     const { email } = body;
     const user = await this.userService.getUserByEmail(email);
+
     if (!user)
       throw new CustomException(
-        "Bad credentials",
-        HttpStatus.PRECONDITION_FAILED,
-        "UC-c-3",
+        "Not found",
+        HttpStatus.NOT_FOUND,
+        "AC-srpe-1",
       );
 
-    const { token, hashedToken } = await this.tokenService.generatetTokenEmail(
+    const { token, hashedToken } = await this.tokenService.generateEmailToken(
       user.id,
     );
 
