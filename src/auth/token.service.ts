@@ -74,7 +74,7 @@ export class TokenService {
     return type === process.env.TOKEN_TYPE ? token : undefined;
   }
 
-  async generatetTokenEmail(userId: string): Promise<{
+  async generateEmailToken(userId: string): Promise<{
     token: string;
     hashedToken: string;
   }> {
