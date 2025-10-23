@@ -3,6 +3,7 @@ import { UserRepositoryInterface } from "./interface/user.interface";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { PrismaService } from "prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
 // a revoir
 
@@ -24,10 +25,10 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
     return this.prisma.user.findMany();
   }
 
-  async connected(id: string) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
     return this.prisma.user.update({
       where: { id },
-      data: { isConnected: true },
+      data: { ...updateUserDto },
     });
   }
 }

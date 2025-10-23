@@ -5,7 +5,6 @@ import { CreateUserDto } from "./dto/create-user.dto";
 import { StatusEnum, User } from "@prisma/client";
 import { DatabaseUserRepository } from "./user.repository";
 import { AuthService } from "src/auth/auth.service";
-import { UserSigninResponse } from "./interface/user.interface";
 import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Injectable()
@@ -28,17 +27,8 @@ export class UserService {
     return this.userRepository.create(data, status);
   }
 
-  signinResponse(user: User): UserSigninResponse {
-    const { password, createdAt, updatedAt, ...rest } = user;
-    return rest;
-  }
-
-  async connected(id: string): Promise<User> {
-    return await this.userRepository.connected(id);
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    return this.userRepository.update(id, updateUserDto);
   }
 
   // remove(id: number) {

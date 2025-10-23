@@ -44,10 +44,10 @@ export class AuthController {
       );
 
     //changement de isConnected
-    user = await this.userService.connected(user.id);
+    user = await this.userService.update(user.id, { isConnected: true });
 
     // remove "password" | "createdAt" | "updatedAt" from user before send it to front
-    const userSigninResponse = this.userService.signinResponse(user);
+    const { password, createdAt, updatedAt, ...userSigninResponse } = user;
 
     // create accessToken and refreshToken
     const { accessToken, refreshToken } = await this.tokenService.createTokens(
@@ -64,7 +64,7 @@ export class AuthController {
 
     return {
       data: { accessToken, refreshToken, userSigninResponse },
-      message: "Connexion réussis.",
+      message: "Connexion réussie.",
     };
   }
 
