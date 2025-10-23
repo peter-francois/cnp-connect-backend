@@ -12,9 +12,14 @@ import { SigninDto } from "./dto/signin.dto";
 import { User } from "@prisma/client";
 import { CustomException } from "src/utils/custom-exception";
 import { TokenService } from "./token.service";
-import { ResponseInterface } from "src/utils/interfaces/response.interface";
+import {
+  ResponseInterface,
+  ResponseInterfaceMessage,
+} from "src/utils/interfaces/response.interface";
 import { type RequestWithPayloadAndRefreshInterface } from "./interfaces/payload.interface";
 import { RefreshTokenGuard } from "./guard/refresh-token.guard";
+import { EmailService } from "src/utils/mail/email.service";
+import { EmailTokensInterface } from "./interfaces/token.interface";
 import { UserSigninResponse } from "src/user/interface/user.interface";
 
 @Controller("auth")
@@ -23,6 +28,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
+    private readonly sendEmailService: EmailService,
   ) {}
 
   @Post("signin")
@@ -69,7 +75,7 @@ export class AuthController {
   }
 
   @UseGuards(RefreshTokenGuard)
-  @Post("refreshToken")
+  @Post("refresh-token")
   async refrechToken(
     @Req() req: RequestWithPayloadAndRefreshInterface,
   ): Promise<ResponseInterface<string>> {
@@ -80,6 +86,7 @@ export class AuthController {
         HttpStatus.UNAUTHORIZED,
         "AC-rt-1",
       );
+
     const oldHashedRefresh = await this.tokenService.getRefreshToken(
       req.user.id,
     );
@@ -96,6 +103,7 @@ export class AuthController {
         HttpStatus.UNAUTHORIZED,
         "AC-rt-2",
       );
+
     // create accessToken and refreshToken
     const { accessToken, refreshToken } = await this.tokenService.createTokens(
       req.user.id,
@@ -110,5 +118,38 @@ export class AuthController {
       data: { accessToken, refreshToken },
       message: "Connexion réussis.",
     };
+  }
+
+  @Post("forgot-password")
+  async sendResetPasswordEmail(
+    @Body() body: { email: string },
+  ): Promise<ResponseInterfaceMessage> {
+    const { email } = body;
+    const user = await this.userService.getUserByEmail(email);
+
+    if (!user)
+      throw new CustomException("Not found", HttpStatus.NOT_FOUND, "AC-srpe-1");
+
+    const { urlSafeToken, hashedToken }: EmailTokensInterface =
+      await this.tokenService.generateEmailToken(user.id);
+
+    await this.tokenService.upsert(
+      user.id,
+      hashedToken,
+      "RESET_PASSWORD",
+      new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+    );
+
+    await this.sendEmailService.sendEmail(
+      user.email,
+      "Test SMTP Brevo NestJS via CNP Connect",
+      `<h1>Bonjour ${user.firstName}</h1>
+          <p>Email envoyé via Cnp-Connect 🚀</p>
+          <a href="http://localhost:3000/auth/change-password?token=${urlSafeToken}">
+            Cliquez ici pour réinitialiser votre mot de passe
+          </a>`,
+    );
+
+    return { message: "L'Email est bien envoyé" };
   }
 }
