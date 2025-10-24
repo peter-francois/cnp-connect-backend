@@ -20,6 +20,7 @@ import { type RequestWithPayloadAndRefreshInterface } from "./interfaces/payload
 import { RefreshTokenGuard } from "./guard/refresh-token.guard";
 import { EmailService } from "src/utils/mail/email.service";
 import { EmailTokensInterface } from "./interfaces/token.interface";
+import { UserSigninResponse } from "src/user/interface/user.interface";
 
 @Controller("auth")
 export class AuthController {
@@ -31,8 +32,10 @@ export class AuthController {
   ) {}
 
   @Post("signin")
-  async signin(@Body() body: SigninDto): Promise<ResponseInterface<string>> {
-    const user: User = await this.userService.getUserByEmail(body.email);
+  async signin(
+    @Body() body: SigninDto,
+  ): Promise<ResponseInterface<string | UserSigninResponse>> {
+    let user: User = await this.userService.getUserByEmail(body.email);
     // compare hash
     const comparePassword: boolean = await this.authService.compare(
       user.password,
@@ -45,6 +48,12 @@ export class AuthController {
         HttpStatus.PRECONDITION_FAILED,
         "AC-s-1",
       );
+
+    //changement de isConnected
+    user = await this.userService.update(user.id, { isConnected: true });
+
+    // remove "password" | "createdAt" | "updatedAt" from user before send it to front
+    const { password, createdAt, updatedAt, ...userSigninResponse } = user;
 
     // create accessToken and refreshToken
     const { accessToken, refreshToken } = await this.tokenService.createTokens(
@@ -59,11 +68,9 @@ export class AuthController {
     // no await so, the token can be inserted in db before return => performance gain, but if exeption => client don't know about it
     this.tokenService.upsert(user.id, hahedRefreshToken);
 
-    //changement de isConnected
-
     return {
-      data: { accessToken, refreshToken },
-      message: "Connexion réussis.",
+      data: { accessToken, refreshToken, userSigninResponse },
+      message: "Connexion réussie.",
     };
   }
 

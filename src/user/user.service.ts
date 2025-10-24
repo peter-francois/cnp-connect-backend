@@ -1,10 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
-// import { UpdateUserDto } from "./dto/update-user.dto";
-// import { PrismaService } from "prisma/prisma.service";
 import { StatusEnum, User } from "@prisma/client";
 import { DatabaseUserRepository } from "./user.repository";
 import { AuthService } from "src/auth/auth.service";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Injectable()
 export class UserService {
@@ -26,9 +25,9 @@ export class UserService {
     return this.userRepository.create(data, status);
   }
 
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    return this.userRepository.update(id, updateUserDto);
+  }
 
   // remove(id: number) {
   //   return `This action removes a #${id} user`;

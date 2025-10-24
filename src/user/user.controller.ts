@@ -26,7 +26,7 @@ export class UserController {
     };
   }
 
-  @UseGuards(CoordinatorGuard)
+  // @UseGuards(CoordinatorGuard)
   @Get()
   async findAll(): Promise<ResponseInterface<User[]>> {
     const users: User[] = await this.userService.findAll();
