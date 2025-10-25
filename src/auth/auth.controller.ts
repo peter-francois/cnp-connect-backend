@@ -62,11 +62,11 @@ export class AuthController {
     );
 
     // hash refreshToken
-    const hahedRefreshToken = await this.authService.hash(refreshToken);
+    const hashedRefreshToken = await this.authService.hash(refreshToken);
 
     // upsert refresh token
     // no await so, the token can be inserted in db before return => performance gain, but if exeption => client don't know about it
-    this.tokenService.upsert(user.id, hahedRefreshToken);
+    this.tokenService.upsert(user.id, hashedRefreshToken);
 
     return {
       data: { accessToken, refreshToken, userSigninResponse },
