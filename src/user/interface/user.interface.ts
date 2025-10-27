@@ -5,7 +5,7 @@ import { UpdateUserDto } from "../dto/update-user.dto";
 export interface UserRepositoryInterface {
   findOneByEmail(email: string): Promise<User>;
   create(data: CreateUserDto, status: StatusEnum): Promise<User>;
-  findMany(): Promise<User[]>;
+  findMany(): Promise<UserSigninResponse[]>;
   update(id: string, updateUserDto: UpdateUserDto): Promise<User>;
 }
 
