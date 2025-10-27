@@ -35,6 +35,7 @@ model User {
   readMessages         ReadMessages[]
   readAlerts           ReadAlerts[]
   assignedTrains       AssignedTrain[]
+  assignedLines        AssignedLine[]
   tokens               Token[]
 }
 
@@ -147,8 +148,20 @@ model Line {
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   lineAlerts LineAlert[]
+  assignedlines AssignedLine[]
   trains     Train[]
   travel     Travel?
+}
+model AssignedLine {
+  lineId    Int       @db.UnsignedInt()
+  line      Line     @relation(fields: [lineId], references: [id])
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  assignmentStartDate DateTime
+  assignmentEndDate   DateTime?
+  createdAt DateTime  @default(now())
+
+  @@id([lineId, userId])
 }
 
 model LineAlert {
@@ -176,8 +189,8 @@ model AssignedTrain {
   train     Train     @relation(fields: [trainId], references: [id])
   userId    String
   user      User      @relation(fields: [userId], references: [id])
-  startDate DateTime
-  endDate   DateTime?
+  assignmentStartDate DateTime
+  assignmentEndDate   DateTime?
   createdAt DateTime  @default(now())
 
   @@id([trainId, userId])
