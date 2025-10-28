@@ -30,7 +30,7 @@ export class UserController {
   // @UseGuards(CoordinatorGuard)
   @Get()
   async findAll(): Promise<ResponseInterface<UserSigninResponse[]>> {
-    const users: UserSigninResponse[] = await this.userService.findAll();
+    const users: UserSigninResponse[] = await this.userService.findMany();
     return {
       data: { users },
       message: "Voici tous les utilisateurs",

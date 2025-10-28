@@ -143,23 +143,24 @@ model ReadAlerts {
 }
 
 model Line {
-  id         Int         @id @default(autoincrement()) @db.UnsignedInt()
-  name       String      @unique @db.VarChar(45)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  lineAlerts LineAlert[]
+  id            Int            @id @default(autoincrement()) @db.UnsignedInt()
+  name          String         @unique @db.VarChar(45)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  lineAlerts    LineAlert[]
   assignedlines AssignedLine[]
-  trains     Train[]
-  travel     Travel?
+  trains        Train[]
+  travel        Travel?
 }
+
 model AssignedLine {
-  lineId    Int       @db.UnsignedInt()
-  line      Line     @relation(fields: [lineId], references: [id])
-  userId    String
-  user      User      @relation(fields: [userId], references: [id])
+  lineId              Int       @db.UnsignedInt()
+  line                Line      @relation(fields: [lineId], references: [id])
+  userId              String
+  user                User      @relation(fields: [userId], references: [id])
   assignmentStartDate DateTime
   assignmentEndDate   DateTime?
-  createdAt DateTime  @default(now())
+  createdAt           DateTime  @default(now())
 
   @@id([lineId, userId])
 }
@@ -185,13 +186,13 @@ model Train {
 }
 
 model AssignedTrain {
-  trainId   Int       @db.UnsignedInt()
-  train     Train     @relation(fields: [trainId], references: [id])
-  userId    String
-  user      User      @relation(fields: [userId], references: [id])
+  trainId             Int       @db.UnsignedInt()
+  train               Train     @relation(fields: [trainId], references: [id])
+  userId              String
+  user                User      @relation(fields: [userId], references: [id])
   assignmentStartDate DateTime
   assignmentEndDate   DateTime?
-  createdAt DateTime  @default(now())
+  createdAt           DateTime  @default(now())
 
   @@id([trainId, userId])
 }

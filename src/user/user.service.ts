@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
-import { StatusEnum, User } from "@prisma/client";
+import { Prisma, StatusEnum, User } from "@prisma/client";
 import { DatabaseUserRepository } from "./user.repository";
 import { AuthService } from "src/auth/auth.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -12,8 +12,21 @@ export class UserService {
     private readonly authService: AuthService,
   ) {}
 
-  async findAll() {
-    return await this.userRepository.findMany();
+  async findMany() {
+    const orderBy = [
+      { role: Prisma.SortOrder.desc },
+      { createdAt: Prisma.SortOrder.desc },
+    ];
+    const omit = { password: true, createdAt: true, updatedAt: true };
+    const include = {
+      assignedLines: {
+        include: { line: true },
+      },
+      assignedTrains: {
+        include: { train: true },
+      },
+    };
+    return await this.userRepository.findMany(omit, include, orderBy);
   }
 
   async getUserByEmail(email: string): Promise<User> {

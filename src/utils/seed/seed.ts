@@ -6,8 +6,9 @@ const prisma = new PrismaClient();
 async function resetIfNeeded() {
   const countLines = await prisma.line.count();
   const countTrains = await prisma.train.count();
+  const countUsers = await prisma.user.count();
 
-  if (countLines > 0 || countTrains > 0) {
+  if (countLines > 0 || countTrains > 0 || countUsers > 0) {
     await prisma.$executeRawUnsafe(`SET FOREIGN_KEY_CHECKS = 0;`);
     await prisma.$executeRawUnsafe(`TRUNCATE TABLE Train;`);
     await prisma.$executeRawUnsafe(`TRUNCATE TABLE Line;`);
