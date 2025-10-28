@@ -9,8 +9,7 @@ import { PrismaService } from "prisma/prisma.service";
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, TokenService, EmailService],
-  providers: [AuthService, TokenService, PrismaService],
+  providers: [AuthService, TokenService, EmailService, PrismaService],
   imports: [
     UserModule,
     JwtModule.register({

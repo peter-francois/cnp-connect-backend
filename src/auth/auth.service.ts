@@ -1,8 +1,8 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import * as argon2 from "argon2";
 import { CustomException } from "src/utils/custom-exception";
-import { ChangePasswordInterface } from "./interfaces/changePassword.interface";
 import { PrismaService } from "prisma/prisma.service";
+import { ResetPasswordDto } from "./dto/reset-password.dto";
 
 @Injectable()
 export class AuthService {
@@ -24,16 +24,17 @@ export class AuthService {
     }
   }
 
-  async changePassword(
-    body: ChangePasswordInterface,
+  async resetPassword(
+    body: ResetPasswordDto,
+    userId: string,
   ): Promise<{ password: string }> {
-    const { id, password } = body;
-    await this.prisma.user.findUniqueOrThrow({ where: { id } });
+    const { password } = body;
+    await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
 
     const hashedPassword = await this.hash(password);
 
     return this.prisma.user.update({
-      where: { id },
+      where: { id: userId },
       data: { password: hashedPassword },
       select: { password: true },
     });

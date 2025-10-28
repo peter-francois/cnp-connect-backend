@@ -22,9 +22,8 @@ import { RefreshTokenGuard } from "./guard/refresh-token.guard";
 import { EmailService } from "src/utils/mail/email.service";
 import { EmailTokensInterface } from "./interfaces/token.interface";
 import { UserSigninResponse } from "src/user/interface/user.interface";
-import type { ChangePasswordInterface } from "./interfaces/changePassword.interface";
 import { AccesTokenGuard } from "./guard/access-token.guard";
-import CryptoJS from "crypto-js";
+import { ResetPasswordDto } from "./dto/reset-password.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -125,21 +124,19 @@ export class AuthController {
   }
 
   @Post("forgot-password")
-  async sendResetPasswordEmail(
+  async forgotPassword(
     @Body() body: { email: string },
   ): Promise<ResponseInterfaceMessage> {
-    const { email } = body;
-    const user = await this.userService.getUserByEmail(email);
+    const user = await this.userService.getUserByEmail(body.email);
 
     if (!user)
       throw new CustomException("Not found", HttpStatus.NOT_FOUND, "AC-srpe-1");
-
-    const { urlSafeToken, hashedToken }: EmailTokensInterface =
-      await this.tokenService.generateEmailToken(user.id);
+    // const isResetPasswordMailSend = this.userService.sendResetPasswordMail(user)
+    const token = this.tokenService.generateEmailToken();
 
     await this.tokenService.upsert(
       user.id,
-      hashedToken,
+      token,
       "RESET_PASSWORD",
       new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
     );
@@ -149,7 +146,7 @@ export class AuthController {
       "Test SMTP Brevo NestJS via CNP Connect",
       `<h1>Bonjour ${user.firstName}</h1>
           <p>Email envoyé via Cnp-Connect 🚀</p>
-          <a href="http://localhost:3000/auth/change-password?token=${urlSafeToken}">
+          <a href="http://localhost:3000/auth/change-password?token=${token}">
             Cliquez ici pour réinitialiser votre mot de passe
           </a>`,
     );
@@ -157,32 +154,15 @@ export class AuthController {
     return { message: "L'Email est bien envoyé" };
   }
 
-  // a89686e9-19c9-480c-bb20-de3d36a55468
-  // U2FsdGVkX19n7dzZRXpPMGn2bTnwy9q8BG49vu2Yshwn8o7\gqCP\afYAo8dtffVtWx5ynNF2HBMrcS7Ulq0Bw==
-  // @Post("changePassword/:token")
-  @Post("changePassword/:token")
-  async changePassword(
-    @Body() body: ChangePasswordInterface,
-    @Param(":token") token: string,
+  @Post("resetPassword/:token/")
+  async resetPassword(
+    @Body() body: ResetPasswordDto,
+    @Param("token") token: string,
   ): Promise<ResponseInterfaceMessage> {
-    console.log("🚀 ~ auth.controller.ts:122 ~ changePassword ~ token:", token);
-    // get userId with token
-    // const userId = CryptoJS.AES.decrypt(token, "secret-test");
-    // console.log(
-    //   "🚀 ~ auth.controller.ts:124 ~ changePassword ~ userId:",
-    //   userId,
-    // );
-    // compare crypted token and none crypted token
-    // chek if token from url match hashed token from db
-
-    // decrypt -> userId
-    // getRefreshToken -> userId+ type RESETPASSWORD
-    // COMPARE hashedtoken with token
     const { password, confirmPassword } = body;
-    // tokenEncrypt=azyteevudcbino,kzv
-    // tokenDecrypt = UUID (userId)
-    // http://localhost:3000/auth/change-password?token=
-    // http://localhost:3000/auth/change-password?uuid=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NThkMjkzLTQ3NjMtNGI4NS1hZTY2LTJhMGY4ZTM2YzdkZCIsInJvbGUiOiJEUklWRVIiLCJpYXQiOjE3NjEwMDE5ODYsImV4cCI6MTc2MTAwMjg4Nn0.qxmdW95SjjLbbk8R8ACgDMGzIFVCozn3lksrpST8dFo
+
+    const userId = await this.tokenService.getUserIdByToken(token);
+
     if (password !== confirmPassword)
       throw new CustomException(
         "BadRequest",
@@ -192,10 +172,12 @@ export class AuthController {
 
     // check if not same password
 
-    await this.authService.changePassword(body);
+    await this.authService.resetPassword(body, userId);
 
     return {
       message: "Mot de passe modifié avec succés.",
     };
   }
 }
+
+// http://localhost:3000/auth/change-password?token=05c0ea12-93bb-4c44-adf0-6f0d54af33fc
