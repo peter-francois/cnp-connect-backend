@@ -3,14 +3,12 @@ import { JwtService, JwtSignOptions } from "@nestjs/jwt";
 import { TokenTypeEnum, Token, RoleEnum } from "@prisma/client";
 import { PrismaService } from "prisma/prisma.service";
 import { PayloadInterface } from "./interfaces/payload.interface";
-import {
-  EmailTokensInterface,
-  TokensInterface,
-} from "./interfaces/token.interface";
+import { TokensInterface } from "./interfaces/token.interface";
 import { Request } from "express";
-import CryptoJS from "crypto-js";
 import { CustomException } from "src/utils/custom-exception";
 import { AuthService } from "./auth.service";
+import { v4 as uuidv4 } from "uuid";
+
 // add salt ?
 
 @Injectable()
@@ -55,7 +53,8 @@ export class TokenService {
       { id, role },
       {
         algorithm: "HS256",
-        expiresIn: "15m",
+        // expiresIn: "15m",
+        expiresIn: "1h",
         secret: process.env.ACCESS_JWT_SECRET,
       },
     );
@@ -77,23 +76,23 @@ export class TokenService {
     return type === process.env.TOKEN_TYPE ? token : undefined;
   }
 
-  async generateEmailToken(userId: string): Promise<EmailTokensInterface> {
-    const secretKey = process.env.CRYPTO_SECRET;
-
-    if (!secretKey)
+  generateEmailToken(): string {
+    try {
+      const uuid: string = uuidv4();
+      return uuid;
+    } catch {
       throw new CustomException(
-        "Unauthorized",
-        HttpStatus.UNAUTHORIZED,
-        "TS-gte-1",
+        "Error generating UUID",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        "TS-get-1",
       );
+    }
+  }
 
-    const token = CryptoJS.AES.encrypt(userId, secretKey).toString();
-    const urlSafeToken = token
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
-    const hashedToken = await this.authService.hash(urlSafeToken);
-
-    return { urlSafeToken, hashedToken };
+  async getUserIdByToken(token: string): Promise<string> {
+    const tokenField = await this.prisma.token.findUniqueOrThrow({
+      where: { token },
+    });
+    return tokenField.userId;
   }
 }

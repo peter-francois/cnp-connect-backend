@@ -4,6 +4,5 @@ export interface TokensInterface {
 }
 
 export interface EmailTokensInterface {
-  urlSafeToken: string;
-  hashedToken: string;
+  token: string;
 }

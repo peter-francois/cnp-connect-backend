@@ -52,7 +52,7 @@ enum StatusEnum {
 }
 
 model Token {
-  token     String
+  token     String        @unique
   type      TokenTypeEnum
   userId    String
   user      User          @relation(fields: [userId], references: [id])
@@ -60,6 +60,7 @@ model Token {
   expiresAt DateTime?
 
   @@id([type, userId])
+  @@index([token])
 }
 
 enum TokenTypeEnum {
