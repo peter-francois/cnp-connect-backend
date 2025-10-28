@@ -7,8 +7,9 @@ import { ResponseInterface } from "src/utils/interfaces/response.interface";
 import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
 import { SupervisorGuard } from "src/auth/guard/supervisor.guard";
 import { CoordinatorGuard } from "src/auth/guard/coordinator.guard";
+import { UserSigninResponse } from "./interface/user.interface";
 
-@UseGuards(AccesTokenGuard)
+//@UseGuards(AccesTokenGuard)
 @Controller("users")
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -28,8 +29,8 @@ export class UserController {
 
   // @UseGuards(CoordinatorGuard)
   @Get()
-  async findAll(): Promise<ResponseInterface<User[]>> {
-    const users: User[] = await this.userService.findAll();
+  async findAll(): Promise<ResponseInterface<UserSigninResponse[]>> {
+    const users: UserSigninResponse[] = await this.userService.findAll();
     return {
       data: { users },
       message: "Voici tous les utilisateurs",

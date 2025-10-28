@@ -1,5 +1,8 @@
 import { StatusEnum, User } from "@prisma/client";
-import { UserRepositoryInterface } from "./interface/user.interface";
+import {
+  UserRepositoryInterface,
+  UserSigninResponse,
+} from "./interface/user.interface";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { PrismaService } from "prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
@@ -21,8 +24,19 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
       data: { ...data, hiredAt: new Date(data.hiredAt), status },
     });
   }
-  async findMany(): Promise<User[]> {
-    return this.prisma.user.findMany();
+  async findMany(): Promise<UserSigninResponse[]> {
+    return this.prisma.user.findMany({
+      orderBy: { createdAt: "desc", role: "desc" },
+      omit: { password: true, createdAt: true, updatedAt: true },
+      include: {
+        assignedLines: {
+          include: { line: true },
+        },
+        assignedTrains: {
+          include: { train: true },
+        },
+      },
+    });
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
