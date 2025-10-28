@@ -15,6 +15,7 @@ async function resetIfNeeded() {
     await prisma.$executeRawUnsafe(`SET FOREIGN_KEY_CHECKS = 1;`);
   }
 }
+
 async function main() {
   await resetIfNeeded();
   const letters = [
@@ -34,6 +35,7 @@ async function main() {
     "N",
     "O",
   ];
+
   const password: string = await argon2.hash("Password123!");
 
   for (let i = 0; i < letters.length; i++) {
@@ -72,6 +74,7 @@ async function main() {
       },
     },
   });
+
   await prisma.user.create({
     data: {
       email: "claireroyer57@gmail.com",
@@ -91,6 +94,7 @@ async function main() {
       },
     },
   });
+
   await prisma.user.create({
     data: {
       email: "contact@peterfrancois.dev",
@@ -110,6 +114,7 @@ async function main() {
       },
     },
   });
+
   for (let i = 0; i < 30; i++) {
     await prisma.user.create({
       data: {
@@ -156,6 +161,7 @@ async function main() {
     });
   }
 }
+
 main()
   .then(async () => {
     await prisma.$disconnect();
