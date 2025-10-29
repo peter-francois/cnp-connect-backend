@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Inject,
+  Query,
+} from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 // import { UpdateUserDto } from "./dto/update-user.dto";
@@ -13,6 +22,12 @@ import { UserSigninResponse } from "./interface/user.interface";
 @Controller("users")
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Get("nats")
+  async getHello(@Query() query: unknown): Promise<string> {
+    console.log("🚀 ~ user.controller.ts:28 ~ getHello ~ query:", query);
+    return this.userService.getHello(query);
+  }
 
   @UseGuards(SupervisorGuard)
   @Post()

@@ -4,9 +4,17 @@ import { UserModule } from "./user/user.module";
 import { AuthModule } from "./auth/auth.module";
 import { EmailModule } from "./utils/mail/email.module";
 import { TokenService } from "./auth/token.service";
+import { ConfigModule } from "@nestjs/config";
+import { ClientsModule, Transport } from "@nestjs/microservices";
 
 @Module({
-  imports: [PrismaModule, UserModule, AuthModule, EmailModule],
+  imports: [
+    PrismaModule,
+    UserModule,
+    AuthModule,
+    EmailModule,
+    ConfigModule.forRoot(),
+  ],
   providers: [TokenService],
 })
 export class AppModule {}
