@@ -21,7 +21,7 @@ import { type RequestWithPayloadAndRefreshInterface } from "./interfaces/payload
 import { RefreshTokenGuard } from "./guard/refresh-token.guard";
 import { EmailService } from "src/utils/mail/email.service";
 import { EmailTokensInterface } from "./interfaces/token.interface";
-import { UserSigninResponse } from "src/user/interface/user.interface";
+import { SafeUserResponse } from "src/user/interface/user.interface";
 import { AccesTokenGuard } from "./guard/access-token.guard";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 
@@ -37,7 +37,7 @@ export class AuthController {
   @Post("signin")
   async signin(
     @Body() body: SigninDto,
-  ): Promise<ResponseInterface<string | UserSigninResponse>> {
+  ): Promise<ResponseInterface<string | SafeUserResponse>> {
     let user: User = await this.userService.getUserByEmail(body.email);
     // compare hash
     const comparePassword: boolean = await this.authService.compare(
