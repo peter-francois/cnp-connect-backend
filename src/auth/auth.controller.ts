@@ -20,7 +20,8 @@ import {
 import { type RequestWithPayloadAndRefreshInterface } from "./interfaces/payload.interface";
 import { RefreshTokenGuard } from "./guard/refresh-token.guard";
 import { EmailService } from "src/utils/mail/email.service";
-import { UserSigninResponse } from "src/user/interface/user.interface";
+import { SafeUserResponse } from "src/user/interface/user.interface";
+import { AccesTokenGuard } from "./guard/access-token.guard";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 
 @Controller("auth")
@@ -35,7 +36,7 @@ export class AuthController {
   @Post("signin")
   async signin(
     @Body() body: SigninDto,
-  ): Promise<ResponseInterface<string | UserSigninResponse>> {
+  ): Promise<ResponseInterface<string | SafeUserResponse>> {
     let user: User = await this.userService.getUserByEmail(body.email);
     // compare hash
     const comparePassword: boolean = await this.authService.compare(
@@ -126,10 +127,11 @@ export class AuthController {
     @Body() body: { email: string },
   ): Promise<ResponseInterfaceMessage> {
     const user = await this.userService.getUserByEmail(body.email);
-
     await this.emailService.sendResetPassword(user);
-
-    return { message: "L'Email est bien envoyé" };
+    return {
+      message:
+        "Si vous avez un compte, un e-mail de réinitialisation de mot de passe a été envoyé.",
+    };
   }
 
   @Post("resetPassword/:token/")
@@ -138,7 +140,6 @@ export class AuthController {
     @Param("token") token: string,
   ): Promise<ResponseInterfaceMessage> {
     const { password, confirmPassword } = body;
-
     const userId = await this.tokenService.getUserIdByToken(token);
 
     if (password !== confirmPassword)
@@ -149,9 +150,7 @@ export class AuthController {
       );
 
     // check if not same password
-
     await this.authService.resetPassword(body, userId);
-
     return {
       message: "Mot de passe modifié avec succés.",
     };

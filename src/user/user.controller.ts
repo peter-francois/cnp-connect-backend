@@ -7,20 +7,23 @@ import { ResponseInterface } from "src/utils/interfaces/response.interface";
 import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
 import { SupervisorGuard } from "src/auth/guard/supervisor.guard";
 import { CoordinatorGuard } from "src/auth/guard/coordinator.guard";
-import { UserSigninResponse } from "./interface/user.interface";
+import { SafeUserResponse } from "./interface/user.interface";
 
 //@UseGuards(AccesTokenGuard)
 @Controller("users")
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(SupervisorGuard)
+  // @UseGuards(SupervisorGuard)
   @Post()
   async create(
     @Body() createUserDto: CreateUserDto,
     status: StatusEnum = StatusEnum.NOT_CONFIRMED,
-  ): Promise<ResponseInterface<User>> {
-    const user: User = await this.userService.createUser(createUserDto, status);
+  ): Promise<ResponseInterface<SafeUserResponse>> {
+    const user: SafeUserResponse = await this.userService.createUser(
+      createUserDto,
+      status,
+    );
     return {
       data: { user },
       message: "Un nouvel utilisation vient d'être créé",
@@ -29,18 +32,19 @@ export class UserController {
 
   // @UseGuards(CoordinatorGuard)
   @Get()
-  async findAll(): Promise<ResponseInterface<UserSigninResponse[]>> {
-    const users: UserSigninResponse[] = await this.userService.findMany();
+  async findAll(): Promise<ResponseInterface<SafeUserResponse[]>> {
+    const users: SafeUserResponse[] =
+      await this.userService.findManyWithLinesAndTrains();
     return {
       data: { users },
       message: "Voici tous les utilisateurs",
     };
   }
 
-  // @Get(":id")
-  // findOne(@Param("id") id: string) {
-  //   return this.userService.findOne(+id);
-  // }
+  @Get(":id")
+  findOne(@Param("id") id: string) {
+    return this.userService.findOneWithLinesAndTrains(id);
+  }
 
   // @Patch(":id")
   // update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {

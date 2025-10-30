@@ -6,13 +6,23 @@ const prisma = new PrismaClient();
 async function resetIfNeeded() {
   const countLines = await prisma.line.count();
   const countTrains = await prisma.train.count();
+  const assignedLine = await prisma.assignedLine.count();
+  const assignedTrain = await prisma.assignedTrain.count();
   const countUsers = await prisma.user.count();
 
-  if (countLines > 0 || countTrains > 0 || countUsers > 0) {
+  if (
+    countLines > 0 ||
+    countTrains > 0 ||
+    countUsers ||
+    assignedLine ||
+    assignedTrain > 0
+  ) {
     await prisma.$executeRawUnsafe(`SET FOREIGN_KEY_CHECKS = 0;`);
     await prisma.$executeRawUnsafe(`TRUNCATE TABLE Train;`);
     await prisma.$executeRawUnsafe(`TRUNCATE TABLE Line;`);
     await prisma.$executeRawUnsafe(`TRUNCATE TABLE User;`);
+    await prisma.$executeRawUnsafe(`TRUNCATE TABLE AssignedLine;`);
+    await prisma.$executeRawUnsafe(`TRUNCATE TABLE AssignedTrain;`);
     await prisma.$executeRawUnsafe(`SET FOREIGN_KEY_CHECKS = 1;`);
   }
 }
@@ -98,7 +108,7 @@ async function main() {
 
   await prisma.user.create({
     data: {
-      email: "contact@peterfrancois.dev",
+      email: "furty51@hotmail.fr",
       password: password,
       firstName: "Peter",
       lastName: "Francois",
@@ -134,7 +144,6 @@ async function main() {
   }
 
   const Lines = await prisma.line.findMany();
-  const Trains = await prisma.train.findMany();
 
   for (let i = 0; i < 2; i++) {
     await prisma.user.create({
@@ -146,12 +155,6 @@ async function main() {
         role: "SUPERVISOR",
         avatarUrl: faker.image.avatar(),
         hiredAt: new Date(),
-        assignedTrains: {
-          create: Trains.map((train) => ({
-            trainId: train.id,
-            assignmentStartDate: new Date(),
-          })),
-        },
         assignedLines: {
           create: Lines.map((line) => ({
             lineId: line.id,

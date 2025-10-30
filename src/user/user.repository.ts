@@ -1,65 +1,42 @@
 import { Prisma, StatusEnum, User } from "@prisma/client";
 import {
   UserRepositoryInterface,
-  UserSigninResponse,
+  SafeUserResponse,
 } from "./interface/user.interface";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { PrismaService } from "prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { DefaultArgs } from "@prisma/client/runtime/client";
-
-// interface FindAllInterface {
-//   orderBy?:
-//     | Prisma.UserOrderByWithRelationInput
-//     | Prisma.UserOrderByWithRelationInput[]
-//     | undefined;
-//   omit?: Prisma.UserOmit<DefaultArgs> | null | undefined;
-//   include?: Prisma.UserInclude<DefaultArgs> | null | undefined;
-// }
-
-// a revoir
 
 @Injectable()
 export class DatabaseUserRepository implements UserRepositoryInterface {
   constructor(private readonly prisma: PrismaService) {}
 
-  // @dev changé le prima pour ne pas prendre le createdat et le updated at?
-  async findOneByEmail(email: string): Promise<User> {
-    return this.prisma.user.findUniqueOrThrow({ where: { email } });
-  }
-
-  async create(data: CreateUserDto, status: StatusEnum): Promise<User> {
+  async create(
+    data: CreateUserDto,
+    status: StatusEnum,
+  ): Promise<SafeUserResponse> {
     return await this.prisma.user.create({
       data: { ...data, hiredAt: new Date(data.hiredAt), status },
+      omit: { password: true, createdAt: true, updatedAt: true },
     });
   }
-
-  // async findMany(): Promise<UserSigninResponse[]> {
-  //   return this.prisma.user.findMany({
-  //     orderBy: {
-  //       createdAt: Prisma.SortOrder.desc,
-  //     },
-  //     omit: { password: true, createdAt: true, updatedAt: true },
-  //     include: {
-  //       assignedLines: {
-  //         include: { line: true },
-  //       },
-  //       assignedTrains: {
-  //         include: { train: true },
-  //       },
-  //     },
-  //   });
-  // }
-
   async findMany(
-    omit?: Prisma.UserOmit<DefaultArgs> | null,
-    include?: Prisma.UserInclude<DefaultArgs> | null,
-    orderBy?:
-      | Prisma.UserOrderByWithRelationInput
-      | Prisma.UserOrderByWithRelationInput[],
-  ): Promise<UserSigninResponse[]> {
-    return this.prisma.user.findMany({ orderBy, omit, include });
+    options?: Prisma.UserFindManyArgs,
+  ): Promise<SafeUserResponse[]> {
+    return this.prisma.user.findMany(options);
+  }
+
+  async findOneByEmail(
+    options: Prisma.UserFindUniqueOrThrowArgs,
+  ): Promise<User> {
+    return this.prisma.user.findUniqueOrThrow(options);
+  }
+
+  async findOne(
+    options: Prisma.UserFindUniqueOrThrowArgs,
+  ): Promise<SafeUserResponse> {
+    return await this.prisma.user.findUniqueOrThrow(options);
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
