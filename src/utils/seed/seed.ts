@@ -143,6 +143,8 @@ async function main() {
     });
   }
 
+  const Lines = await prisma.line.findMany();
+
   for (let i = 0; i < 2; i++) {
     await prisma.user.create({
       data: {
@@ -153,6 +155,12 @@ async function main() {
         role: "SUPERVISOR",
         avatarUrl: faker.image.avatar(),
         hiredAt: new Date(),
+        assignedLines: {
+          create: Lines.map((line) => ({
+            lineId: line.id,
+            assignmentStartDate: new Date(),
+          })),
+        },
       },
     });
   }
