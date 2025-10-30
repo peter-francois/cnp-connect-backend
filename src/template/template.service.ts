@@ -1,11 +1,16 @@
-import { Injectable } from "@nestjs/common";
-import { CreateTemplateDto } from "./dto/create-template.dto";
+import { Inject, Injectable } from "@nestjs/common";
 import { UpdateTemplateDto } from "./dto/update-template.dto";
+import { ClientProxy } from "@nestjs/microservices";
+import { lastValueFrom } from "rxjs";
+import { Template } from "./entities/template.entity";
+import { CreateTemplateDto } from "./dto/create-template.dto";
 
 @Injectable()
 export class TemplateService {
-  create(createTemplateDto: CreateTemplateDto) {
-    return "This action adds a new template";
+  constructor(@Inject("NATS_SERVICE") private clientNats: ClientProxy) {}
+
+  async create(payload: CreateTemplateDto): Promise<Template> {
+    return lastValueFrom(this.clientNats.send("template.create", payload));
   }
 
   findAll() {
