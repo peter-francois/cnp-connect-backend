@@ -1,12 +1,11 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { JwtService, JwtSignOptions } from "@nestjs/jwt";
-import { TokenTypeEnum, Token, RoleEnum } from "@prisma/client";
+import { TokenTypeEnum, Token, RoleEnum, User } from "@prisma/client";
 import { PrismaService } from "prisma/prisma.service";
 import { PayloadInterface } from "./interfaces/payload.interface";
 import { TokensInterface } from "./interfaces/token.interface";
 import { Request } from "express";
 import { CustomException } from "src/utils/custom-exception";
-import { AuthService } from "./auth.service";
 import { v4 as uuidv4 } from "uuid";
 
 // add salt ?
@@ -16,7 +15,6 @@ export class TokenService {
   constructor(
     private jwtService: JwtService,
     private prisma: PrismaService,
-    private authService: AuthService,
   ) {}
 
   async generateJwt(
@@ -76,23 +74,29 @@ export class TokenService {
     return type === process.env.TOKEN_TYPE ? token : undefined;
   }
 
-  generateEmailToken(): string {
-    try {
-      const uuid: string = uuidv4();
-      return uuid;
-    } catch {
-      throw new CustomException(
-        "Error generating UUID",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "TS-get-1",
-      );
-    }
+  async generateTokenUuid(user: User): Promise<string> {
+    const uuid: string = uuidv4();
+
+    await this.upsert(
+      user.id,
+      uuid,
+      "RESET_PASSWORD",
+      new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+    );
+    return uuid;
   }
 
   async getUserIdByToken(token: string): Promise<string> {
     const tokenField = await this.prisma.token.findUniqueOrThrow({
       where: { token },
     });
+
+    if (tokenField.expiresAt && tokenField.expiresAt <= new Date())
+      throw new CustomException(
+        "Token expired",
+        HttpStatus.UNAUTHORIZED,
+        "TS-guidbt-1",
+      );
     return tokenField.userId;
   }
 }

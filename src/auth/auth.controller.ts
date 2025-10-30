@@ -31,7 +31,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
-    private readonly sendEmailService: EmailService,
+    private readonly emailService: EmailService,
   ) {}
 
   @Post("signin")
@@ -129,27 +129,7 @@ export class AuthController {
   ): Promise<ResponseInterfaceMessage> {
     const user = await this.userService.getUserByEmail(body.email);
 
-    if (!user)
-      throw new CustomException("Not found", HttpStatus.NOT_FOUND, "AC-srpe-1");
-    // const isResetPasswordMailSend = this.userService.sendResetPasswordMail(user)
-    const token = this.tokenService.generateEmailToken();
-
-    await this.tokenService.upsert(
-      user.id,
-      token,
-      "RESET_PASSWORD",
-      new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
-    );
-
-    await this.sendEmailService.sendEmail(
-      user.email,
-      "Test SMTP Brevo NestJS via CNP Connect",
-      `<h1>Bonjour ${user.firstName}</h1>
-          <p>Email envoyé via Cnp-Connect 🚀</p>
-          <a href="http://localhost:3000/auth/change-password?token=${token}">
-            Cliquez ici pour réinitialiser votre mot de passe
-          </a>`,
-    );
+    await this.emailService.sendResetPassword(user);
 
     return { message: "L'Email est bien envoyé" };
   }
@@ -167,7 +147,7 @@ export class AuthController {
       throw new CustomException(
         "BadRequest",
         HttpStatus.BAD_REQUEST,
-        "As-cp-1",
+        "AC-rp-1",
       );
 
     // check if not same password
