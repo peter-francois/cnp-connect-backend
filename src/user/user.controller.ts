@@ -23,12 +23,6 @@ import { UserSigninResponse } from "./interface/user.interface";
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get("nats")
-  async getHello(@Query() query: unknown): Promise<string> {
-    console.log("🚀 ~ user.controller.ts:28 ~ getHello ~ query:", query);
-    return this.userService.getHello(query);
-  }
-
   @UseGuards(SupervisorGuard)
   @Post()
   async create(

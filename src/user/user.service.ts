@@ -1,24 +1,16 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { Prisma, StatusEnum, User } from "@prisma/client";
 import { DatabaseUserRepository } from "./user.repository";
 import { AuthService } from "src/auth/auth.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { lastValueFrom } from "rxjs";
-import { ClientProxy } from "@nestjs/microservices";
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: DatabaseUserRepository,
     private readonly authService: AuthService,
-    @Inject("NATS_SERVICE") private client: ClientProxy,
   ) {}
-
-  async getHello(query: unknown) {
-    const resultFromMS = await lastValueFrom(this.client.send("hello", query));
-    return resultFromMS;
-  }
 
   async findMany() {
     const orderBy = [
