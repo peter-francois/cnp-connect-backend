@@ -22,17 +22,24 @@ export class UserService {
     return this.userRepository.create(data, status);
   }
 
-  async findMany(): Promise<SafeUserResponse[]> {
+  async findManyWithLinesAndTrains(): Promise<SafeUserResponse[]> {
     const orderBy = [
       { role: Prisma.SortOrder.desc },
       { createdAt: Prisma.SortOrder.desc },
     ];
     const omit = { password: true, createdAt: true, updatedAt: true };
-
-    return await this.userRepository.findMany({ omit, orderBy });
+    const include = {
+      assignedLines: {
+        include: { line: true },
+      },
+      assignedTrains: {
+        include: { train: true },
+      },
+    };
+    return await this.userRepository.findMany({ omit, orderBy, include });
   }
 
-  async findOne(id: string): Promise<SafeUserResponse> {
+  async findOneWithLinesAndTrains(id: string): Promise<SafeUserResponse> {
     const where: Prisma.UserWhereUniqueInput = { id };
     const omit = { password: true, createdAt: true, updatedAt: true };
     const include = {

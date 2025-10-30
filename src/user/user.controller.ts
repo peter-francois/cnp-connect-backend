@@ -33,7 +33,8 @@ export class UserController {
   // @UseGuards(CoordinatorGuard)
   @Get()
   async findAll(): Promise<ResponseInterface<SafeUserResponse[]>> {
-    const users: SafeUserResponse[] = await this.userService.findMany();
+    const users: SafeUserResponse[] =
+      await this.userService.findManyWithLinesAndTrains();
     return {
       data: { users },
       message: "Voici tous les utilisateurs",
@@ -42,7 +43,7 @@ export class UserController {
 
   @Get(":id")
   findOne(@Param("id") id: string) {
-    return this.userService.findOne(id);
+    return this.userService.findOneWithLinesAndTrains(id);
   }
 
   // @Patch(":id")

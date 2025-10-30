@@ -7,18 +7,6 @@ import { CreateUserDto } from "./dto/create-user.dto";
 import { PrismaService } from "prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { DefaultArgs } from "@prisma/client/runtime/client";
-
-// interface FindAllInterface {
-//   orderBy?:
-//     | Prisma.UserOrderByWithRelationInput
-//     | Prisma.UserOrderByWithRelationInput[]
-//     | undefined;
-//   omit?: Prisma.UserOmit<DefaultArgs> | null | undefined;
-//   include?: Prisma.UserInclude<DefaultArgs> | null | undefined;
-// }
-
-// a revoir
 
 @Injectable()
 export class DatabaseUserRepository implements UserRepositoryInterface {
@@ -39,7 +27,6 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
     return this.prisma.user.findMany(options);
   }
 
-  // @dev changé le prima pour ne pas prendre le createdat et le updated at?
   async findOneByEmail(
     options: Prisma.UserFindUniqueOrThrowArgs,
   ): Promise<User> {
