@@ -1,45 +1,55 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
+  Inject,
+  Get,
+  HttpStatus,
 } from "@nestjs/common";
-import { TemplateService } from "./template.service";
-import { UpdateTemplateDto } from "./dto/update-template.dto";
-import { CreateTemplateDto } from "./dto/create-template.dto";
+import { ClientProxy } from "@nestjs/microservices";
+import { lastValueFrom } from "rxjs";
+import { CustomException } from "src/utils/custom-exception";
+import { ResponseInterface } from "src/utils/interfaces/response.interface";
 
 @Controller("template")
 export class TemplateController {
-  constructor(private readonly templateService: TemplateService) {}
+  private readonly natsSubject = "notification.template";
+  constructor(@Inject("NATS_SERVICE") private clientNats: ClientProxy) {}
 
   @Post()
-  create(@Body() body: CreateTemplateDto) {
-    return this.templateService.create(body);
+  async create(@Body() body: unknown): Promise<ResponseInterface<unknown>> {
+    return lastValueFrom(
+      this.clientNats.send(`${this.natsSubject}.create`, body),
+    );
   }
 
   @Get()
-  findAll() {
-    return this.templateService.findAll();
+  async findAll(): Promise<ResponseInterface<unknown>> {
+    const templates = await lastValueFrom(
+      this.clientNats.send(`${this.natsSubject}.findAll`, {}),
+    );
+
+    if (!templates)
+      throw new CustomException("Not Found", HttpStatus.NOT_FOUND, "TC-fa-1");
+
+    return { data: templates, message: "Aucune templates trouvées." };
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.templateService.findOne(+id);
-  }
+  // @Get(":id")
+  // findOne(@Param("id") id: string) {
+  //   return this.templateService.findOne(+id);
+  // }
 
-  @Patch(":id")
-  update(
-    @Param("id") id: string,
-    @Body() updateTemplateDto: UpdateTemplateDto,
-  ) {
-    return this.templateService.update(+id, updateTemplateDto);
-  }
+  // @Patch(":id")
+  // update(
+  //   @Param("id") id: string,
+  //   @Body() updateTemplateDto: UpdateTemplateDto,
+  // ) {
+  //   return this.templateService.update(+id, updateTemplateDto);
+  // }
 
-  @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.templateService.remove(+id);
-  }
+  // @Delete(":id")
+  // remove(@Param("id") id: string) {
+  //   return this.templateService.remove(+id);
+  // }
 }
