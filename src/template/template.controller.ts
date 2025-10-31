@@ -14,6 +14,7 @@ import { ResponseInterface } from "src/utils/interfaces/response.interface";
 @Controller("template")
 export class TemplateController {
   private readonly natsSubject = "notification.template";
+
   constructor(@Inject("NATS_SERVICE") private clientNats: ClientProxy) {}
 
   @Post()

@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { TemplateController } from "./template.controller";
-import { NatsClientModule } from "src/message_broker/nats-client.module";
+import { NatsClientModule } from "src/message_broker/nats_client.module";
 
 @Module({
   imports: [NatsClientModule],
