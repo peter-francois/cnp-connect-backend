@@ -2,7 +2,8 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
 import { PrismaExeptionFilter } from "./utils/filters/prisma-exeption.filter";
-import { CustomExceptionFilter } from "./utils/filters/custom-exception.filter";
+import { CustomHttpExceptionFilter } from "./utils/filters/custom_http_exception.filter copy";
+import { CustomNatsExceptionFilter } from "./utils/filters/custom_nats_exception.filter";
 
 const port = process.env.PORT ?? 3000;
 
@@ -16,7 +17,11 @@ async function bootstrap() {
     }),
   );
   app.enableCors();
-  app.useGlobalFilters(new PrismaExeptionFilter(), new CustomExceptionFilter());
+  app.useGlobalFilters(
+    new PrismaExeptionFilter(),
+    new CustomHttpExceptionFilter(),
+    new CustomNatsExceptionFilter(),
+  );
   await app.listen(port);
 }
 console.log(`Gateway API is running on: http://localhost:${port}`);
