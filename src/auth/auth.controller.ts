@@ -6,6 +6,7 @@ import {
   Req,
   UseGuards,
   Param,
+  Get,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { UserService } from "src/user/user.service";
@@ -134,12 +135,11 @@ export class AuthController {
     };
   }
 
-  @Post("resetPassword/:token/")
+  @Post("reset-password")
   async resetPassword(
     @Body() body: ResetPasswordDto,
-    @Param("token") token: string,
   ): Promise<ResponseInterfaceMessage> {
-    const { password, confirmPassword } = body;
+    const { password, confirmPassword, token } = body;
     const userId = await this.tokenService.getUserIdByToken(token);
 
     if (password !== confirmPassword)
