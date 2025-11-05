@@ -21,22 +21,40 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
       omit: { password: true, createdAt: true, updatedAt: true },
     });
   }
-  async findMany(
-    options?: Prisma.UserFindManyArgs,
-  ): Promise<SafeUserResponse[]> {
-    return this.prisma.user.findMany(options);
+  async findMany(): Promise<SafeUserResponse[]> {
+    const orderBy = [
+      { role: Prisma.SortOrder.desc },
+      { createdAt: Prisma.SortOrder.desc },
+    ];
+    const omit = { password: true, createdAt: true, updatedAt: true };
+    const include = {
+      assignedLines: {
+        include: { line: true },
+      },
+      assignedTrains: {
+        include: { train: true },
+      },
+    };
+    return this.prisma.user.findMany({ orderBy, omit, include });
   }
 
-  async findOneByEmail(
-    options: Prisma.UserFindUniqueOrThrowArgs,
-  ): Promise<User> {
-    return this.prisma.user.findUniqueOrThrow(options);
+  async findOne(id: string): Promise<SafeUserResponse> {
+    const where: Prisma.UserWhereUniqueInput = { id };
+    const omit = { password: true, createdAt: true, updatedAt: true };
+    const include = {
+      assignedLines: {
+        include: { line: true },
+      },
+      assignedTrains: {
+        include: { train: true },
+      },
+    };
+    return await this.prisma.user.findUniqueOrThrow({ where, omit, include });
   }
 
-  async findOne(
-    options: Prisma.UserFindUniqueOrThrowArgs,
-  ): Promise<SafeUserResponse> {
-    return await this.prisma.user.findUniqueOrThrow(options);
+  async findOneByEmail(email: string): Promise<User> {
+    const omit = { createdAt: true, updatedAt: true };
+    return this.prisma.user.findUniqueOrThrow({ where: { email }, omit });
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {

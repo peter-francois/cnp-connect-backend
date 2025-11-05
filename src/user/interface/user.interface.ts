@@ -1,12 +1,12 @@
-import { Prisma, StatusEnum, User } from "@prisma/client";
+import { StatusEnum, User } from "@prisma/client";
 import { CreateUserDto } from "../dto/create-user.dto";
 import { UpdateUserDto } from "../dto/update-user.dto";
 
 export interface UserRepositoryInterface {
-  findOneByEmail(options: Prisma.UserFindUniqueOrThrowArgs): Promise<User>;
   create(data: CreateUserDto, status: StatusEnum): Promise<SafeUserResponse>;
-  findMany(options?: Prisma.UserFindManyArgs): Promise<SafeUserResponse[]>;
-  findOne(options?: Prisma.UserFindManyArgs): Promise<SafeUserResponse>;
+  findMany(): Promise<SafeUserResponse[]>;
+  findOne(id: string): Promise<SafeUserResponse>;
+  findOneByEmail(email: string): Promise<User>;
   update(id: string, updateUserDto: UpdateUserDto): Promise<User>;
 }
 
