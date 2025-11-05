@@ -128,7 +128,9 @@ export class AuthController {
     @Body() body: { email: string },
   ): Promise<ResponseInterfaceMessage> {
     const user = await this.userService.getUserByEmail(body.email);
+
     await this.emailService.sendResetPassword(user);
+
     return {
       message:
         "Si vous avez un compte, un e-mail de réinitialisation de mot de passe a été envoyé.",

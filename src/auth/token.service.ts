@@ -91,12 +91,16 @@ export class TokenService {
       where: { token },
     });
 
-    if (tokenField.expiresAt && tokenField.expiresAt <= new Date())
+    if (tokenField.expiresAt && tokenField.expiresAt <= new Date()) {
+      await this.prisma.token.delete({ where: { token } });
+
       throw new CustomException(
         "Token expired",
         HttpStatus.UNAUTHORIZED,
         "TS-guidbt-1",
       );
+    }
+
     return tokenField.userId;
   }
 }
