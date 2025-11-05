@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
-import { Prisma, RoleEnum, StatusEnum, User } from "@prisma/client";
+import { StatusEnum, User } from "@prisma/client";
 import { DatabaseUserRepository } from "./user.repository";
 import { AuthService } from "src/auth/auth.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -23,39 +23,15 @@ export class UserService {
   }
 
   async findManyWithLinesAndTrains(): Promise<SafeUserResponse[]> {
-    const orderBy = [
-      { role: Prisma.SortOrder.desc },
-      { createdAt: Prisma.SortOrder.desc },
-    ];
-    const omit = { password: true, createdAt: true, updatedAt: true };
-    const include = {
-      assignedLines: {
-        include: { line: true },
-      },
-      assignedTrains: {
-        include: { train: true },
-      },
-    };
-    return await this.userRepository.findMany({ omit, orderBy, include });
+    return await this.userRepository.findMany();
   }
 
   async findOneWithLinesAndTrains(id: string): Promise<SafeUserResponse> {
-    const where: Prisma.UserWhereUniqueInput = { id };
-    const omit = { password: true, createdAt: true, updatedAt: true };
-    const include = {
-      assignedLines: {
-        include: { line: true },
-      },
-      assignedTrains: {
-        include: { train: true },
-      },
-    };
-    return await this.userRepository.findOne({ where, omit, include });
+    return await this.userRepository.findOne(id);
   }
 
   async getUserByEmail(email: string): Promise<User> {
-    const omit = { createdAt: true, updatedAt: true };
-    return this.userRepository.findOneByEmail({ where: { email }, omit });
+    return this.userRepository.findOneByEmail(email);
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
