@@ -6,6 +6,7 @@ import {
   Req,
   UseGuards,
   Param,
+  Get,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { UserService } from "src/user/user.service";
@@ -127,19 +128,20 @@ export class AuthController {
     @Body() body: { email: string },
   ): Promise<ResponseInterfaceMessage> {
     const user = await this.userService.getUserByEmail(body.email);
+
     await this.emailService.sendResetPassword(user);
+
     return {
       message:
         "Si vous avez un compte, un e-mail de réinitialisation de mot de passe a été envoyé.",
     };
   }
 
-  @Post("resetPassword/:token/")
+  @Post("reset-password")
   async resetPassword(
     @Body() body: ResetPasswordDto,
-    @Param("token") token: string,
   ): Promise<ResponseInterfaceMessage> {
-    const { password, confirmPassword } = body;
+    const { password, confirmPassword, token } = body;
     const userId = await this.tokenService.getUserIdByToken(token);
 
     if (password !== confirmPassword)

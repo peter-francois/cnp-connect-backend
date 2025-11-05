@@ -55,7 +55,7 @@ export class UserService {
 
   async getUserByEmail(email: string): Promise<User> {
     const omit = { createdAt: true, updatedAt: true };
-    return this.userRepository.findOneByEmail({ where: { id: email }, omit });
+    return this.userRepository.findOneByEmail({ where: { email }, omit });
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
