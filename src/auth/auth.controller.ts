@@ -89,7 +89,6 @@ export class AuthController {
         HttpStatus.UNAUTHORIZED,
         "AC-rt-1",
       );
-
     const oldHashedRefresh = await this.tokenService.getRefreshToken(
       req.user.id,
     );
