@@ -4,7 +4,7 @@ import { TokenTypeEnum, Token, RoleEnum, User } from "@prisma/client";
 import { PrismaService } from "prisma/prisma.service";
 import { PayloadInterface } from "./interfaces/payload.interface";
 import { TokensInterface } from "./interfaces/token.interface";
-import { Request } from "express";
+import { Request, Response } from "express";
 import { CustomException } from "src/utils/custom-exception";
 import { v4 as uuidv4 } from "uuid";
 
@@ -102,5 +102,12 @@ export class TokenService {
     }
 
     return tokenField.userId;
+  }
+
+  addTokenInResponseAsCookie(response: Response, refreshToken: string): void {
+    response.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 24 * 3600 * 1000,
+    });
   }
 }
