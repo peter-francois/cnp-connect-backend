@@ -9,7 +9,7 @@ import { SupervisorGuard } from "src/auth/guard/supervisor.guard";
 import { CoordinatorGuard } from "src/auth/guard/coordinator.guard";
 import { SafeUserResponse } from "./interface/user.interface";
 
-//@UseGuards(AccesTokenGuard)
+@UseGuards(AccesTokenGuard)
 @Controller("users")
 export class UserController {
   constructor(private readonly userService: UserService) {}
