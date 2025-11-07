@@ -7,6 +7,7 @@ import {
   UseGuards,
   Param,
   Get,
+  Res,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { UserService } from "src/user/user.service";
@@ -24,6 +25,7 @@ import { EmailService } from "src/utils/mail/email.service";
 import { SafeUserResponse } from "src/user/interface/user.interface";
 import { AccesTokenGuard } from "./guard/access-token.guard";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
+import type { Response } from "express";
 
 @Controller("auth")
 export class AuthController {
@@ -37,6 +39,7 @@ export class AuthController {
   @Post("signin")
   async signin(
     @Body() body: SigninDto,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<ResponseInterface<string | SafeUserResponse>> {
     let user: User = await this.userService.getUserByEmail(body.email);
     // compare hash
@@ -64,6 +67,13 @@ export class AuthController {
       user.role,
     );
 
+    // add access token in cookies
+    this.tokenService.addTokenInResponseAsCookie(response, refreshToken);
+    // response.cookie("refreshToken", refreshToken, {
+    //   httpOnly: true,
+    //   maxAge: 24 * 3600 * 1000,
+    // });
+
     // hash refreshToken
     const hashedRefreshToken = await this.authService.hash(refreshToken);
 
@@ -72,15 +82,16 @@ export class AuthController {
     this.tokenService.upsert(user.id, hashedRefreshToken);
 
     return {
-      data: { accessToken, refreshToken, userSigninResponse },
+      data: { accessToken, userSigninResponse },
       message: "Connexion réussie.",
     };
   }
 
   @UseGuards(RefreshTokenGuard)
   @Post("refresh-token")
-  async refrechToken(
+  async refreshToken(
     @Req() req: RequestWithPayloadAndRefreshInterface,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<ResponseInterface<string>> {
     // get refresh from DB
     if (!req.user)
@@ -97,7 +108,8 @@ export class AuthController {
     //compare tokens
     const compareTokens: boolean = await this.authService.compare(
       oldHashedRefresh.token,
-      req.refreshToken,
+      // req.refreshToken,
+      req.cookies["refreshToken"] as string,
     );
 
     if (!compareTokens)
@@ -113,12 +125,19 @@ export class AuthController {
       req.user.role,
     );
 
+    // add access token in cookies
+    this.tokenService.addTokenInResponseAsCookie(response, refreshToken);
+    // response.cookie("refreshToken", refreshToken, {
+    //   httpOnly: true,
+    //   maxAge: 24 * 3600 * 1000,
+    // });
+
     const hahedRefreshToken = await this.authService.hash(refreshToken);
 
     this.tokenService.upsert(req.user.id, hahedRefreshToken);
 
     return {
-      data: { accessToken, refreshToken },
+      data: { accessToken },
       message: "Connexion réussis.",
     };
   }
