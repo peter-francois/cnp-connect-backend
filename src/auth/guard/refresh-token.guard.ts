@@ -29,6 +29,7 @@ export class RefreshTokenGuard implements CanActivate {
         "RTG-ca-1",
       );
     }
+
     try {
       const payload: PayloadInterface = await this.jwtService.verifyAsync(
         refreshToken,

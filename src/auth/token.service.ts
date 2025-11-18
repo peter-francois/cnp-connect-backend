@@ -117,6 +117,7 @@ export class TokenService {
     response.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       maxAge: 24 * 3600 * 1000,
+      // @dev sameSite: "strict",
     });
   }
 }
