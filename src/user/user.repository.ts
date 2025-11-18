@@ -3,7 +3,10 @@ import {
   UserRepositoryInterface,
   SafeUserResponse,
 } from "./interface/user.interface";
-import { CreateUserDto } from "./dto/create-user.dto";
+import {
+  CreateUserDto,
+  CreateUserDtoForGoogleOauth,
+} from "./dto/create-user.dto";
 import { PrismaService } from "prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -13,7 +16,7 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(
-    data: CreateUserDto,
+    data: CreateUserDto | CreateUserDtoForGoogleOauth,
     status: StatusEnum,
   ): Promise<SafeUserResponse> {
     return await this.prisma.user.create({

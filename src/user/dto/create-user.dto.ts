@@ -2,6 +2,7 @@ import {
   IsDateString,
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsStrongPassword,
 } from "class-validator";
@@ -21,6 +22,34 @@ export class CreateUserDto {
     minUppercase: 1,
   })
   password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }): string =>
+    typeof value === "string" ? value.trim() : value,
+  )
+  firstName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }): string =>
+    typeof value === "string" ? value.trim() : value,
+  )
+  lastName: string;
+
+  @IsDateString()
+  @IsNotEmpty()
+  hiredAt: string;
+
+  @IsNotEmpty()
+  @IsString()
+  role: RoleEnum;
+}
+
+export class CreateUserDtoForGoogleOauth {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
 
   @IsString()
   @IsNotEmpty()

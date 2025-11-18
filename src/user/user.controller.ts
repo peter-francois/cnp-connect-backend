@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
-import { CreateUserDto } from "./dto/create-user.dto";
+import { CreateUserDto, CreateUserDtoForGoogleOauth } from "./dto/create-user.dto";
 // import { UpdateUserDto } from "./dto/update-user.dto";
 import { StatusEnum, User } from "@prisma/client";
 import { ResponseInterface } from "src/utils/interfaces/response.interface";
@@ -17,7 +17,7 @@ export class UserController {
   // @UseGuards(SupervisorGuard)
   @Post()
   async create(
-    @Body() createUserDto: CreateUserDto,
+    @Body() createUserDto: CreateUserDto | CreateUserDtoForGoogleOauth,
     status: StatusEnum = StatusEnum.NOT_CONFIRMED,
   ): Promise<ResponseInterface<SafeUserResponse>> {
     const user: SafeUserResponse = await this.userService.createUser(

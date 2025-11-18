@@ -3,10 +3,14 @@ import * as argon2 from "argon2";
 import { CustomException } from "src/utils/custom-exception";
 import { PrismaService } from "prisma/prisma.service";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
+import { JwtService, JwtSignOptions } from "@nestjs/jwt";
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private jwtService: JwtService,
+  ) {}
 
   hash(data: string): Promise<string> {
     try {
@@ -27,7 +31,7 @@ export class AuthService {
   async resetPassword(
     body: ResetPasswordDto,
     userId: string,
-  ): Promise<{ password: string }> {
+  ): Promise<{ password: string | null }> {
     const { password } = body;
     await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
 

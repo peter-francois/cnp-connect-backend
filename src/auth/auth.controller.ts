@@ -12,7 +12,7 @@ import {
 import { AuthService } from "./auth.service";
 import { UserService } from "src/user/user.service";
 import { SigninDto } from "./dto/signin.dto";
-import { User } from "@prisma/client";
+import { RoleEnum, StatusEnum, User } from "@prisma/client";
 import { CustomException } from "src/utils/custom-exception";
 import { TokenService } from "./token.service";
 import {
@@ -26,6 +26,8 @@ import { SafeUserResponse } from "src/user/interface/user.interface";
 import { AccesTokenGuard } from "./guard/access-token.guard";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import type { Response } from "express";
+import { AuthGuard } from "@nestjs/passport";
+import { CreateUserDtoForGoogleOauth } from "src/user/dto/create-user.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -43,17 +45,18 @@ export class AuthController {
   ): Promise<ResponseInterface<string | SafeUserResponse>> {
     let user: User = await this.userService.getUserByEmail(body.email);
     // compare hash
-    const comparePassword: boolean = await this.authService.compare(
-      user.password,
-      body.password,
-    );
-
-    if (!comparePassword)
-      throw new CustomException(
-        "Bad credentials",
-        HttpStatus.PRECONDITION_FAILED,
-        "AC-s-1",
+    if (user.password) {
+      const comparePassword: boolean = await this.authService.compare(
+        user.password,
+        body.password,
       );
+      if (!comparePassword)
+        throw new CustomException(
+          "Bad credentials",
+          HttpStatus.PRECONDITION_FAILED,
+          "AC-s-1",
+        );
+    }
 
     //changement de isConnected
     user = await this.userService.update(user.id, { isConnected: true });
@@ -170,6 +173,50 @@ export class AuthController {
     await this.authService.resetPassword(body, userId);
     return {
       message: "Mot de passe modifié avec succés.",
+    };
+  }
+  @Get("google")
+  @UseGuards(AuthGuard("google"))
+  async googleAuth(@Req() req) {}
+
+  @Get("google/callback")
+  @UseGuards(AuthGuard("google"))
+  async googleAuthRedirect(
+    @Req() req,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    // create new user with credentials from google
+    const UserDtoFromGoogleOauth: CreateUserDtoForGoogleOauth = {
+      email: req.user.email,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      hiredAt: new Date().toDateString(),
+      role: RoleEnum.DRIVER,
+    };
+    const user = await this.userService.createUser(
+      UserDtoFromGoogleOauth,
+      StatusEnum.NOT_CONFIRMED,
+    );
+
+    // create accessToken and refreshToken
+    const { accessToken, refreshToken } = await this.tokenService.createTokens(
+      user.id,
+      user.role,
+    );
+
+    // add access token in cookies
+    this.tokenService.addRefreshTokenInResponseAsCookie(response, refreshToken);
+
+    // hash refreshToken
+    const hashedRefreshToken = await this.authService.hash(refreshToken);
+
+    // upsert refresh token
+    // no await so, the token can be inserted in db before return => performance gain, but if exeption => client don't know about it
+    this.tokenService.upsert(user.id, hashedRefreshToken);
+
+    return {
+      data: { accessToken },
+      message: "Connexion réussie.",
     };
   }
 }

@@ -1,5 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { CreateUserDto } from "./dto/create-user.dto";
+import {
+  CreateUserDto,
+  CreateUserDtoForGoogleOauth,
+} from "./dto/create-user.dto";
 import { StatusEnum, User } from "@prisma/client";
 import { DatabaseUserRepository } from "./user.repository";
 import { AuthService } from "src/auth/auth.service";
@@ -14,11 +17,13 @@ export class UserService {
   ) {}
 
   async createUser(
-    data: CreateUserDto,
+    data: CreateUserDto | CreateUserDtoForGoogleOauth,
     status: StatusEnum,
   ): Promise<SafeUserResponse> {
     // hash password
-    data.password = await this.authService.hash(data.password);
+    if (data instanceof CreateUserDto) {
+      data.password = await this.authService.hash(data.password);
+    }
     return this.userRepository.create(data, status);
   }
 
