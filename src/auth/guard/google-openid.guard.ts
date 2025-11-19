@@ -4,13 +4,12 @@ import {
   HttpStatus,
   Injectable,
 } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
 import { CustomException } from "src/utils/custom-exception";
 import axios from "axios";
 
 @Injectable()
 export class GoogleOpenIdGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor() {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
