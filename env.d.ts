@@ -4,5 +4,8 @@ declare namespace NodeJS {
     ACCESS_JWT_SECRET: string;
     REFRESH_JWT_SECRET: string;
     PORT: number;
+    GOOGLE_CLIENT_ID: string;
+    GOOGLE_CLIENT_SECRET: string;
+    GOOGLE_CALLBACK_URL: string;
   }
 }

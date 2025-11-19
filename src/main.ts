@@ -4,9 +4,29 @@ import { ValidationPipe } from "@nestjs/common";
 import { PrismaExeptionFilter } from "./utils/filters/prisma-exeption.filter";
 import { CustomExceptionFilter } from "./utils/filters/custom-exception.filter";
 import cookieParser from "cookie-parser";
+import { ConfigService } from "@nestjs/config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const config = app.get(ConfigService);
+
+  // validation simple et explicite
+  const required = [
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GOOGLE_CALLBACK_URL",
+    "ACCESS_JWT_SECRET",
+    "REFRESH_JWT_SECRET",
+  ];
+  const missingEnvVariable = required.filter((key) => !config.get<string>(key));
+  if (missingEnvVariable.length) {
+    console.error(
+      "Missing required env variables:",
+      missingEnvVariable.join(", "),
+    );
+    process.exit(1);
+  }
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
