@@ -195,7 +195,7 @@ export class AuthController {
     };
     const user = await this.userService.createUser(
       UserDtoFromGoogleOauth,
-      StatusEnum.NOT_CONFIRMED,
+      StatusEnum.CONFIRMED,
     );
 
     // create accessToken and refreshToken
