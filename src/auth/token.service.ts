@@ -52,7 +52,7 @@ export class TokenService {
       {
         algorithm: "HS256",
         // expiresIn: "15m",
-        expiresIn: "1h",
+        expiresIn: "15m",
         secret: process.env.ACCESS_JWT_SECRET,
       },
     );
@@ -72,6 +72,11 @@ export class TokenService {
   extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(" ") ?? [];
     return type === process.env.TOKEN_TYPE ? token : undefined;
+  }
+
+  extractTokenCookie(request: Request): string {
+    const tokenFromCookie: string = request.cookies["refreshToken"];
+    return tokenFromCookie;
   }
 
   async generateTokenUuid(user: User): Promise<string> {
@@ -104,10 +109,14 @@ export class TokenService {
     return tokenField.userId;
   }
 
-  addTokenInResponseAsCookie(response: Response, refreshToken: string): void {
+  addRefreshTokenInResponseAsCookie(
+    response: Response,
+    refreshToken: string,
+  ): void {
     response.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       maxAge: 24 * 3600 * 1000,
+      sameSite: "strict",
     });
   }
 }

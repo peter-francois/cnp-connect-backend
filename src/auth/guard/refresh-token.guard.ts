@@ -20,7 +20,7 @@ export class RefreshTokenGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
     const refreshToken: string | undefined =
-      this.tokenService.extractTokenFromHeader(request);
+      this.tokenService.extractTokenCookie(request);
 
     if (!refreshToken) {
       throw new CustomException(
@@ -29,6 +29,7 @@ export class RefreshTokenGuard implements CanActivate {
         "RTG-ca-1",
       );
     }
+
     try {
       const payload: PayloadInterface = await this.jwtService.verifyAsync(
         refreshToken,

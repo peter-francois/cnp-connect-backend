@@ -68,11 +68,7 @@ export class AuthController {
     );
 
     // add access token in cookies
-    this.tokenService.addTokenInResponseAsCookie(response, refreshToken);
-    // response.cookie("refreshToken", refreshToken, {
-    //   httpOnly: true,
-    //   maxAge: 24 * 3600 * 1000,
-    // });
+    this.tokenService.addRefreshTokenInResponseAsCookie(response, refreshToken);
 
     // hash refreshToken
     const hashedRefreshToken = await this.authService.hash(refreshToken);
@@ -126,7 +122,7 @@ export class AuthController {
     );
 
     // add access token in cookies
-    this.tokenService.addTokenInResponseAsCookie(response, refreshToken);
+    this.tokenService.addRefreshTokenInResponseAsCookie(response, refreshToken);
     // response.cookie("refreshToken", refreshToken, {
     //   httpOnly: true,
     //   maxAge: 24 * 3600 * 1000,
