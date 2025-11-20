@@ -74,9 +74,8 @@ export class TokenService {
     return type === process.env.TOKEN_TYPE ? token : undefined;
   }
 
-  extractTokenCookie(request: Request): string | undefined {
-    const tokenFromCookie = request.cookies?.["refreshToken"];
-    console.log(tokenFromCookie);
+  extractTokenCookie(request: Request): string {
+    const tokenFromCookie: string = request.cookies["refreshToken"];
     return tokenFromCookie;
   }
 
@@ -117,7 +116,7 @@ export class TokenService {
     response.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       maxAge: 24 * 3600 * 1000,
-      // @dev sameSite: "strict",
+      sameSite: "strict",
     });
   }
 }
