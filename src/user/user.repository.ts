@@ -9,9 +9,12 @@ const userWithAssignedLineAndTrain = Prisma.validator<Prisma.UserDefaultArgs>()(
     omit: { password: true, createdAt: true, updatedAt: true },
   },
 );
-type SafeUserResponse = Prisma.UserGetPayload<{
-  omit: { password: true; createdAt: true; updatedAt: true };
-}>;
+
+const safeUser = Prisma.validator<Prisma.UserDefaultArgs>()({
+  omit: { password: true, createdAt: true, updatedAt: true },
+});
+
+type SafeUserResponse = Prisma.UserGetPayload<typeof safeUser>;
 
 type SafeUserResponseWithAssignedLineAndTrain = Prisma.UserGetPayload<
   typeof userWithAssignedLineAndTrain
