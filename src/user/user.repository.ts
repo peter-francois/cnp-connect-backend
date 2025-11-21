@@ -14,9 +14,9 @@ const safeUser = Prisma.validator<Prisma.UserDefaultArgs>()({
   omit: { password: true, createdAt: true, updatedAt: true },
 });
 
-type SafeUserResponse = Prisma.UserGetPayload<typeof safeUser>;
+type SafeUserResponsePrisma = Prisma.UserGetPayload<typeof safeUser>;
 
-type SafeUserResponseWithAssignedLineAndTrain = Prisma.UserGetPayload<
+type SafeUserResponseWithAssignedLineAndTrainPrisma = Prisma.UserGetPayload<
   typeof userWithAssignedLineAndTrain
 >;
 
@@ -27,13 +27,14 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
   async create(
     data: Prisma.UserCreateInput,
     status: StatusEnum,
-  ): Promise<SafeUserResponse> {
+  ): Promise<SafeUserResponsePrisma> {
     return await this.prisma.user.create({
       data: { ...data, hiredAt: new Date(data.hiredAt), status },
       omit: { password: true, createdAt: true, updatedAt: true },
     });
   }
-  async findMany(): Promise<SafeUserResponseWithAssignedLineAndTrain[]> {
+
+  async findMany(): Promise<SafeUserResponseWithAssignedLineAndTrainPrisma[]> {
     const orderBy = [
       { role: Prisma.SortOrder.desc },
       { createdAt: Prisma.SortOrder.desc },
@@ -50,7 +51,9 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
     return this.prisma.user.findMany({ orderBy, omit, include });
   }
 
-  async findOne(id: string): Promise<SafeUserResponseWithAssignedLineAndTrain> {
+  async findOne(
+    id: string,
+  ): Promise<SafeUserResponseWithAssignedLineAndTrainPrisma> {
     const where: Prisma.UserWhereUniqueInput = { id };
     const omit = { password: true, createdAt: true, updatedAt: true };
     const include = {
