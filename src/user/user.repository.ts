@@ -3,15 +3,17 @@ import { UserRepositoryInterface } from "./interface/user.interface";
 import { PrismaService } from "prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
 
+const omit = { password: true, createdAt: true, updatedAt: true };
+
 const userWithAssignedLineAndTrain = Prisma.validator<Prisma.UserDefaultArgs>()(
   {
     include: { assignedLines: true, assignedTrains: true },
-    omit: { password: true, createdAt: true, updatedAt: true },
+    omit,
   },
 );
 
 const safeUser = Prisma.validator<Prisma.UserDefaultArgs>()({
-  omit: { password: true, createdAt: true, updatedAt: true },
+  omit,
 });
 
 type SafeUserResponsePrisma = Prisma.UserGetPayload<typeof safeUser>;
@@ -30,7 +32,7 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
   ): Promise<SafeUserResponsePrisma> {
     return await this.prisma.user.create({
       data: { ...data, hiredAt: new Date(data.hiredAt), status },
-      omit: { password: true, createdAt: true, updatedAt: true },
+      omit,
     });
   }
 
@@ -39,7 +41,6 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
       { role: Prisma.SortOrder.desc },
       { createdAt: Prisma.SortOrder.desc },
     ];
-    const omit = { password: true, createdAt: true, updatedAt: true };
     const include = {
       assignedLines: {
         include: { line: true },
@@ -51,11 +52,10 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
     return this.prisma.user.findMany({ orderBy, omit, include });
   }
 
-  async findOne(
+  async findOneWithAssignedLineAndTrainPrisma(
     id: string,
   ): Promise<SafeUserResponseWithAssignedLineAndTrainPrisma> {
     const where: Prisma.UserWhereUniqueInput = { id };
-    const omit = { password: true, createdAt: true, updatedAt: true };
     const include = {
       assignedLines: {
         include: { line: true },
@@ -67,9 +67,16 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
     return await this.prisma.user.findUniqueOrThrow({ where, omit, include });
   }
 
+  async findOneById(id: string): Promise<SafeUserResponsePrisma> {
+    return this.prisma.user.findUniqueOrThrow({ where: { id }, omit });
+  }
+
   async findOneByEmail(email: string): Promise<User> {
-    const omit = { createdAt: true, updatedAt: true };
-    return this.prisma.user.findUniqueOrThrow({ where: { email }, omit });
+    const omitWithPassword = { createdAt: true, updatedAt: true };
+    return this.prisma.user.findUniqueOrThrow({
+      where: { email },
+      omit: omitWithPassword,
+    });
   }
 
   async update(id: string, updateUserDto: Prisma.UserUpdateInput) {

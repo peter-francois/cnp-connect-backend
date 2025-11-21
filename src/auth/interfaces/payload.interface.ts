@@ -6,11 +6,11 @@ export interface PayloadInterface {
   role: RoleEnum;
 }
 
-export interface RequestWithPayloadInterface extends Request {
+export interface RequestWithPayload extends Request {
   user: PayloadInterface;
 }
 
 export interface RequestWithPayloadAndRefreshInterface
-  extends RequestWithPayloadInterface {
+  extends RequestWithPayload {
   refreshToken: string;
 }

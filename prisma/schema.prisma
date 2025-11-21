@@ -48,7 +48,7 @@ enum RoleEnum {
 enum StatusEnum {
   NOT_CONFIRMED
   CONFIRMED
-  NOTEMPLOYED // deactivate reset password
+  NOT_EMPLOYED // deactivate reset password
 }
 
 model Token {

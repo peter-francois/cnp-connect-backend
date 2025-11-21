@@ -12,14 +12,17 @@ import {
 import { AuthService } from "./auth.service";
 import { UserService } from "src/user/user.service";
 import { SigninDto } from "./dto/signin.dto";
-import { User } from "@prisma/client";
+import { StatusEnum, User } from "@prisma/client";
 import { CustomException } from "src/utils/custom-exception";
 import { TokenService } from "./token.service";
 import {
-  ResponseInterface,
+  type ResponseInterface,
   ResponseInterfaceMessage,
 } from "src/utils/interfaces/response.interface";
-import { type RequestWithPayloadAndRefreshInterface } from "./interfaces/payload.interface";
+import {
+  type RequestWithPayload,
+  type RequestWithPayloadAndRefreshInterface,
+} from "./interfaces/payload.interface";
 import { RefreshTokenGuard } from "./guard/refresh-token.guard";
 import { EmailService } from "src/utils/mail/email.service";
 import { SafeUserResponse } from "src/user/interface/user.interface";
@@ -35,6 +38,24 @@ export class AuthController {
     private readonly tokenService: TokenService,
     private readonly emailService: EmailService,
   ) {}
+
+  @UseGuards(AccesTokenGuard)
+  @Get("me")
+  async me(
+    @Req() req: RequestWithPayload,
+  ): Promise<ResponseInterface<SafeUserResponse>> {
+    const user = await this.userService.findOneById(req.user.id);
+    if (
+      user.status === StatusEnum.NOT_CONFIRMED ||
+      user.status === StatusEnum.NOT_EMPLOYED
+    )
+      throw new CustomException(
+        "Unauthorize",
+        HttpStatus.UNAUTHORIZED,
+        "AC-m-1",
+      );
+    return { data: { user }, message: "Utilisateur courant" };
+  }
 
   @Post("signin")
   async signin(
