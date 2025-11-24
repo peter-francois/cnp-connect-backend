@@ -27,7 +27,11 @@ export class UserService {
   }
 
   async findOneWithLinesAndTrains(id: string): Promise<SafeUserResponse> {
-    return await this.userRepository.findOne(id);
+    return await this.userRepository.findOneWithAssignedLineAndTrainPrisma(id);
+  }
+
+  async findOneById(id: string): Promise<SafeUserResponse> {
+    return await this.userRepository.findOneById(id);
   }
 
   async getUserByEmail(email: string): Promise<User> {
