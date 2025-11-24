@@ -44,6 +44,7 @@ export class AuthController {
     @Req() req: RequestWithPayloadInterface,
   ): Promise<ResponseInterface<SafeUserResponse>> {
     const user = await this.userService.findOneById(req.user.id);
+
     if (
       user.status === StatusEnum.NOT_CONFIRMED ||
       user.status === StatusEnum.NOT_EMPLOYED
