@@ -5,7 +5,6 @@ import {
   HttpStatus,
   Req,
   UseGuards,
-  Param,
   Get,
   Res,
 } from "@nestjs/common";
@@ -20,7 +19,7 @@ import {
   ResponseInterfaceMessage,
 } from "src/utils/interfaces/response.interface";
 import {
-  type RequestWithPayload,
+  type RequestWithPayloadInterface,
   type RequestWithPayloadAndRefreshInterface,
 } from "./interfaces/payload.interface";
 import { RefreshTokenGuard } from "./guard/refresh-token.guard";
@@ -42,7 +41,7 @@ export class AuthController {
   @UseGuards(AccesTokenGuard)
   @Get("me")
   async me(
-    @Req() req: RequestWithPayload,
+    @Req() req: RequestWithPayloadInterface,
   ): Promise<ResponseInterface<SafeUserResponse>> {
     const user = await this.userService.findOneById(req.user.id);
     if (
@@ -80,6 +79,7 @@ export class AuthController {
     user = await this.userService.update(user.id, { isConnected: true });
 
     // remove "password" | "createdAt" | "updatedAt" from user before send it to front
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, createdAt, updatedAt, ...userSigninResponse } = user;
 
     // create accessToken and refreshToken
@@ -96,6 +96,7 @@ export class AuthController {
 
     // upsert refresh token
     // no await so, the token can be inserted in db before return => performance gain, but if exeption => client don't know about it
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.tokenService.upsert(user.id, hashedRefreshToken);
 
     return {
@@ -151,6 +152,7 @@ export class AuthController {
 
     const hahedRefreshToken = await this.authService.hash(refreshToken);
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.tokenService.upsert(req.user.id, hahedRefreshToken);
 
     return {

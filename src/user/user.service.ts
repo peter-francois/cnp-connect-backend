@@ -33,7 +33,7 @@ export class UserService {
   async findOneById(id: string): Promise<SafeUserResponse> {
     return await this.userRepository.findOneById(id);
   }
-  
+
   async getUserByEmail(email: string): Promise<User> {
     return this.userRepository.findOneByEmail(email);
   }

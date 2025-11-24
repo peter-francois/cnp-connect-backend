@@ -5,6 +5,7 @@ import { Injectable } from "@nestjs/common";
 
 const omit = { password: true, createdAt: true, updatedAt: true };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const userWithAssignedLineAndTrain = Prisma.validator<Prisma.UserDefaultArgs>()(
   {
     include: { assignedLines: true, assignedTrains: true },
@@ -12,6 +13,7 @@ const userWithAssignedLineAndTrain = Prisma.validator<Prisma.UserDefaultArgs>()(
   },
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const safeUser = Prisma.validator<Prisma.UserDefaultArgs>()({
   omit,
 });
