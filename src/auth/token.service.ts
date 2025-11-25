@@ -130,6 +130,11 @@ export class TokenService {
   }
 
   deleteRefreshTokenCookie(response: Response): void {
-    response.clearCookie("refreshToken");
+    response.cookie("refreshToken", "", {
+      httpOnly: true,
+      expires: new Date(0),
+      sameSite: "strict",
+      path: "/",
+    });
   }
 }
