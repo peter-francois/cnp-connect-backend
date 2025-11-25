@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Patch,
+} from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 // import { UpdateUserDto } from "./dto/update-user.dto";
@@ -8,6 +16,7 @@ import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
 import { SupervisorGuard } from "src/auth/guard/supervisor.guard";
 import { CoordinatorGuard } from "src/auth/guard/coordinator.guard";
 import { SafeUserResponse } from "./interface/user.interface";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
 @UseGuards(AccesTokenGuard)
 @Controller("users")
@@ -41,15 +50,26 @@ export class UserController {
     };
   }
 
+  // @dev refaire comme les autre pour avoir le meme type de retour
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.userService.findOneWithLinesAndTrains(id);
   }
 
-  // @Patch(":id")
-  // update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.userService.update(+id, updateUserDto);
-  // }
+  @Patch(":id")
+  async update(
+    @Param("id") id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<ResponseInterface<SafeUserResponse>> {
+    const userUpdated: SafeUserResponse = await this.userService.update(
+      id,
+      updateUserDto,
+    );
+    return {
+      data: { userUpdated },
+      message: "Voici l'utilisateur mis à jour",
+    };
+  }
 
   // @Delete(":id")
   // remove(@Param("id") id: string) {
