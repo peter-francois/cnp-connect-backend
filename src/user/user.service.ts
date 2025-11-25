@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { StatusEnum, User } from "@prisma/client";
 import { DatabaseUserRepository } from "./user.repository";

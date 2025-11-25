@@ -73,6 +73,7 @@ async function main() {
       firstName: "Nicolas",
       lastName: "Sam",
       role: "COORDINATOR",
+      status: "CONFIRMED",
       avatarUrl: faker.image.avatar(),
       hiredAt: new Date(),
       assignedLines: {

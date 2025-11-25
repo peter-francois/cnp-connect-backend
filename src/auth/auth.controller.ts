@@ -196,6 +196,17 @@ export class AuthController {
       message: "Mot de passe modifié avec succés.",
     };
   }
+
+  @UseGuards(AccesTokenGuard)
+  @Post("signout")
+  async signout(
+    @Req() req: RequestWithPayloadAndRefreshInterface,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<ResponseInterfaceMessage> {
+    await this.authService.signout(req.user.id);
+    this.tokenService.deleteRefreshTokenCookie(response);
+    return { message: "Déconnexion réussie." };
+  }
 }
 
 // http://localhost:3000/auth/change-password?token=05c0ea12-93bb-4c44-adf0-6f0d54af33fc
