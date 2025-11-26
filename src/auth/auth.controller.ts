@@ -204,7 +204,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<ResponseInterfaceMessage> {
     await this.authService.signout(req.user.id);
-    this.tokenService.deleteRefreshTokenCookie(response);
+    this.tokenService.removeRefreshTokenInResponseAsCookie(response);
     return { message: "Déconnexion réussie." };
   }
 }

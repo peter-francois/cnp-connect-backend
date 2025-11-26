@@ -126,15 +126,18 @@ export class TokenService {
       httpOnly: true,
       maxAge: 24 * 3600 * 1000,
       sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      path: "/auth"
     });
   }
 
-  deleteRefreshTokenCookie(response: Response): void {
+  removeRefreshTokenInResponseAsCookie(response: Response): void {
     response.cookie("refreshToken", "", {
       httpOnly: true,
       expires: new Date(0),
       sameSite: "strict",
-      path: "/",
+      secure: process.env.NODE_ENV === "production",
+      path: "/auth",
     });
   }
 }
