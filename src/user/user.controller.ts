@@ -41,6 +41,7 @@ export class UserController {
 
   // @UseGuards(CoordinatorGuard)
   @Get()
+  // @dev put limit
   async findAll(): Promise<ResponseInterface<SafeUserResponse[]>> {
     const users: SafeUserResponse[] =
       await this.userService.findManyWithLinesAndTrains();
