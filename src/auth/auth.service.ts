@@ -4,9 +4,14 @@ import { CustomException } from "src/utils/custom-exception";
 import { PrismaService } from "prisma/prisma.service";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 
+import { TokenService } from "./token.service";
+
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly tokenService: TokenService,
+  ) {}
 
   hash(data: string): Promise<string> {
     try {
@@ -38,5 +43,13 @@ export class AuthService {
       data: { password: hashedPassword },
       select: { password: true },
     });
+  }
+
+  async signout(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isConnected: false },
+    });
+    await this.tokenService.deleteRefreshToken(userId);
   }
 }

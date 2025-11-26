@@ -69,6 +69,15 @@ export class TokenService {
     return { accessToken, refreshToken };
   }
 
+  async deleteRefreshToken(
+    userId: string,
+    type: TokenTypeEnum = TokenTypeEnum.REFRESH_TOKEN,
+  ): Promise<void> {
+    await this.prisma.token.delete({
+      where: { type_userId: { type, userId } },
+    });
+  }
+
   extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(" ") ?? [];
     return type === process.env.TOKEN_TYPE ? token : undefined;
@@ -117,6 +126,18 @@ export class TokenService {
       httpOnly: true,
       maxAge: 24 * 3600 * 1000,
       sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      path: "/auth"
+    });
+  }
+
+  removeRefreshTokenInResponseAsCookie(response: Response): void {
+    response.cookie("refreshToken", "", {
+      httpOnly: true,
+      expires: new Date(0),
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      path: "/auth",
     });
   }
 }
