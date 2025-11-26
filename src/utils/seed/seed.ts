@@ -94,6 +94,7 @@ async function main() {
       firstName: "Claire",
       lastName: "Royer",
       role: "COORDINATOR",
+      status: "CONFIRMED",
       avatarUrl: faker.image.avatar(),
       hiredAt: new Date(),
       assignedLines: {
@@ -114,6 +115,7 @@ async function main() {
       firstName: "Peter",
       lastName: "Francois",
       role: "COORDINATOR",
+      status: "CONFIRMED",
       avatarUrl: faker.image.avatar(),
       hiredAt: new Date(),
       assignedLines: {
