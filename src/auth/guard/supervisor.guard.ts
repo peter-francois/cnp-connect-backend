@@ -10,6 +10,8 @@ import { PayloadInterface } from "../interfaces/payload.interface";
 import { CustomException } from "src/utils/custom-exception";
 import { TokenService } from "../token.service";
 
+// @dev on a plus besoin de verifié le token car on est déja forcément passé par l'acces guard
+
 @Injectable()
 export class SupervisorGuard implements CanActivate {
   constructor(
