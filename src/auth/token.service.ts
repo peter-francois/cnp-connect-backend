@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { JwtService, JwtSignOptions } from "@nestjs/jwt";
-import { TokenTypeEnum, Token, RoleEnum, User } from "@prisma/client";
+import { TokenTypeEnum, Token, User } from "@prisma/client";
 import { PrismaService } from "prisma/prisma.service";
 import {
   PayloadInterface,
@@ -81,6 +81,10 @@ export class TokenService {
     );
 
     return { accessToken, refreshToken };
+  }
+
+  async delete(token: string): Promise<void> {
+    await this.prisma.token.delete({ where: { token } });
   }
 
   async deleteRefreshToken(userId: string, sessionId: string): Promise<void> {

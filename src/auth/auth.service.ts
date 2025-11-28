@@ -29,19 +29,12 @@ export class AuthService {
     }
   }
 
-  async resetPassword(
-    body: ResetPasswordDto,
-    userId: string,
-  ): Promise<{ password: string }> {
+  async resetPassword(body: ResetPasswordDto, userId: string): Promise<void> {
     const { password } = body;
-    await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
-
-    const hashedPassword = await this.hash(password);
-
-    return this.prisma.user.update({
+    const newhashedPassword = await this.hash(password);
+    await this.prisma.user.update({
       where: { id: userId },
-      data: { password: hashedPassword },
-      select: { password: true },
+      data: { password: newhashedPassword },
     });
   }
 

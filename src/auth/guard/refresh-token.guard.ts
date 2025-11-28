@@ -40,6 +40,7 @@ export class RefreshTokenGuard implements CanActivate {
       request["user"] = payload;
       request["refreshToken"] = refreshToken;
     } catch {
+      this.tokenService.delete(refreshToken);
       throw new CustomException(
         "Unauthorized exception",
         HttpStatus.UNAUTHORIZED,

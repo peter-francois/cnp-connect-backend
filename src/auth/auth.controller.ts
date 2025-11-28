@@ -199,8 +199,8 @@ export class AuthController {
         "AC-rp-1",
       );
 
-    // @dev this is not done:  check if not same password
     await this.authService.resetPassword(body, userId);
+    await this.tokenService.delete(token);
     return {
       message: "Mot de passe modifié avec succés.",
     };
