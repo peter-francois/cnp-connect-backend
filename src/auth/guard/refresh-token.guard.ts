@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
-import { PayloadInterface } from "../interfaces/payload.interface";
+import { PayloadWithSessionIdInterface } from "../interfaces/payload.interface";
 import { CustomException } from "src/utils/custom-exception";
 import { TokenService } from "../token.service";
 
@@ -31,15 +31,16 @@ export class RefreshTokenGuard implements CanActivate {
     }
 
     try {
-      const payload: PayloadInterface = await this.jwtService.verifyAsync(
-        refreshToken,
-        { secret: process.env.REFRESH_JWT_SECRET },
-      );
+      const payload: PayloadWithSessionIdInterface =
+        await this.jwtService.verifyAsync(refreshToken, {
+          secret: process.env.REFRESH_JWT_SECRET,
+        });
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request["user"] = payload;
       request["refreshToken"] = refreshToken;
     } catch {
+      this.tokenService.delete(refreshToken);
       throw new CustomException(
         "Unauthorized exception",
         HttpStatus.UNAUTHORIZED,

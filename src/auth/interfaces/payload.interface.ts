@@ -1,11 +1,9 @@
-import { RoleEnum } from "@prisma/client";
 import { Request } from "express";
 
+// for access token
 export interface PayloadInterface {
   id: string;
-  role: RoleEnum;
 }
-
 export interface RequestWithPayloadInterface extends Request {
   user: PayloadInterface;
 }
