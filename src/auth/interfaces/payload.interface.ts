@@ -10,7 +10,13 @@ export interface RequestWithPayloadInterface extends Request {
   user: PayloadInterface;
 }
 
-export interface RequestWithPayloadAndRefreshInterface
-  extends RequestWithPayloadInterface {
+// for refresh token
+export interface PayloadWithSessionIdInterface {
+  id: string;
+  sessionId: string;
+}
+
+export interface RequestWithPayloadSessionAndRefreshInterface extends Request {
+  user: PayloadWithSessionIdInterface;
   refreshToken: string;
 }
