@@ -1,14 +1,14 @@
-FROM node:20 AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
 COPY . .
 
-RUN npm ci --only=production && \
+RUN npm ci --omit=dev && \
     npx prisma generate && \
     npm run build
 
-FROM node:20
+FROM node:24-alpine
 
 WORKDIR /app
 
