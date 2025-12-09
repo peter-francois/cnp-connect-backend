@@ -9,7 +9,6 @@ import { CustomException } from "src/utils/custom-exception";
 import { UserService } from "src/user/user.service";
 import { RoleEnum } from "@prisma/client";
 
-// @dev on a plus besoin de verifié le token car on est déja forcément passé par l'acces guard
 @Injectable()
 export class CoordinatorGuard implements CanActivate {
   constructor(private readonly userService: UserService) {}

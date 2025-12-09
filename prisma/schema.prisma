@@ -51,7 +51,6 @@ enum StatusEnum {
   NOT_EMPLOYED // deactivate reset password
 }
 
-// @dev voir pour le multiplatforme
 model Token {
   sessionId String?        @unique
   token     String        @id

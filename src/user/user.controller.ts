@@ -51,10 +51,16 @@ export class UserController {
     };
   }
 
-  // @dev refaire comme les autre pour avoir le meme type de retour
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.userService.findOneWithLinesAndTrains(id);
+  async findOne(
+    @Param("id") id: string,
+  ): Promise<ResponseInterface<SafeUserResponse>> {
+    const user: SafeUserResponse =
+      await this.userService.findOneWithLinesAndTrains(id);
+    return {
+      data: { user },
+      message: "Voici l'utilisateur demandé",
+    };
   }
 
   @Patch(":id")
