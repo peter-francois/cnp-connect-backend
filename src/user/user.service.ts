@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { StatusEnum, User } from "@prisma/client";
 import { DatabaseUserRepository } from "./user.repository";
-import { AuthService } from "src/auth/auth.service";
+import { AuthService } from "./../auth/auth.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { SafeUserResponse } from "./interface/user.interface";
 

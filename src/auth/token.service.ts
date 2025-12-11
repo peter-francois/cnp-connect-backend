@@ -1,14 +1,14 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { JwtService, JwtSignOptions } from "@nestjs/jwt";
 import { TokenTypeEnum, Token, User } from "@prisma/client";
-import { PrismaService } from "prisma/prisma.service";
+import { PrismaService } from "../../prisma/prisma.service";
 import {
   PayloadInterface,
   PayloadWithSessionIdInterface,
 } from "./interfaces/payload.interface";
 import { TokensInterface } from "./interfaces/token.interface";
 import { Request, Response } from "express";
-import { CustomException } from "src/utils/custom-exception";
+import { CustomException } from "../utils/custom-exception";
 import { v4 as uuidv4 } from "uuid";
 
 // add salt ?

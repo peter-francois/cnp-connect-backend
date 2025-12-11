@@ -1,6 +1,6 @@
 import { Prisma, StatusEnum, User } from "@prisma/client";
 import { UserRepositoryInterface } from "./interface/user.interface";
-import { PrismaService } from "prisma/prisma.service";
+import { PrismaService } from "../../prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
 
 const omit = { password: true, createdAt: true, updatedAt: true };
