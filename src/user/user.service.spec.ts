@@ -28,7 +28,7 @@ describe("UserService", () => {
       ],
     }).compile();
 
-    userService = moduleRef.get(UserService);
+    userService = moduleRef.get<UserService>(UserService);
   });
 
   describe("When the getUserByEmail function is called", () => {
@@ -49,23 +49,29 @@ describe("UserService", () => {
       avatarUrl: null,
       role: RoleEnum.DRIVER,
     };
-    // @dev voir si util
-    // const error = {
-    //   prismaCode: "P2025",
-    //   timestamp: new Date(),
-    //   path: "/auth/signin",
-    //   message: "Record does not exist",
-    //   requestBody: {
-    //     email: "florian44@hotmail.com",
-    //   },
-    // };
+    const error = {
+      prismaCode: "P2025",
+      timestamp: new Date(),
+      path: "/auth/signin",
+      message: "Record does not exist",
+      requestBody: {
+        email: "florian44@hotmail.com",
+      },
+    };
 
-    // it("Should return a notFound errror when the email is not in DB", async () => {
-    //   prismaMock.user.findUniqueOrThrow.mockRejectedValue(error);
-    //   await expect(userService.getUserByEmail(emailNotExist)).rejects.toBe(
-    //     error,
-    //   );
-    // });
+    it("Should return a notFound errror when the email is not exist", async () => {
+      prismaMock.user.findUniqueOrThrow.mockResolvedValue(error);
+      const result = await userService.getUserByEmail(emailNotExist);
+      expect(result).toBe(error);
+      expect(prismaMock.user.findUniqueOrThrow).toHaveBeenCalledTimes(1);
+      expect(prismaMock.user.findUniqueOrThrow).toHaveBeenCalledWith({
+        where: { email: emailNotExist },
+        omit: {
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    });
 
     it("Should return the user with the right email", async () => {
       prismaMock.user.findUniqueOrThrow.mockResolvedValue(user);
@@ -75,7 +81,7 @@ describe("UserService", () => {
 
       expect(result).toBeDefined();
       expect(result).toBe(user);
-      expect(prismaMock.user.findUniqueOrThrow).toHaveBeenCalledTimes(1);
+      expect(prismaMock.user.findUniqueOrThrow).toHaveBeenCalledTimes(2);
       expect(prismaMock.user.findUniqueOrThrow).toHaveBeenCalledWith({
         where: { email: emailExist },
         omit: {
