@@ -127,6 +127,7 @@ export class AuthController {
       );
 
     // get old refresh token
+    // test pipeline
     const oldHashedRefreshToken = await this.tokenService.getRefreshToken(
       req.user.id,
       req.user.sessionId,
