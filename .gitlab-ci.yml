@@ -8,4 +8,4 @@ build-app:
   script:
     - docker build -t $CI_REGISTRY_IMAGE:$TAG_BUILD .
   rules:
-    when: manuel
+    when: manual
