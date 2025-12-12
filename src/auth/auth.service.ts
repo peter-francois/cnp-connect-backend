@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import * as argon2 from "argon2";
-import { CustomException } from "src/utils/custom-exception";
-import { PrismaService } from "prisma/prisma.service";
+import { CustomException } from "../utils/custom-exception";
+import { PrismaService } from "../../prisma/prisma.service";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { Request } from "express";
 import { TokenService } from "./token.service";
