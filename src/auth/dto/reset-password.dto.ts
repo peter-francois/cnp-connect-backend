@@ -1,4 +1,4 @@
-import { IsStrongPassword } from "class-validator";
+import { IsStrongPassword, IsUUID } from "class-validator";
 
 export class ResetPasswordDto {
   @IsStrongPassword({
@@ -18,4 +18,7 @@ export class ResetPasswordDto {
     minUppercase: 1,
   })
   confirmPassword: string;
+
+  @IsUUID()
+  token: string;
 }

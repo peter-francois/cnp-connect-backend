@@ -1,68 +1,87 @@
 import { Prisma, StatusEnum, User } from "@prisma/client";
-import {
-  UserRepositoryInterface,
-  UserSigninResponse,
-} from "./interface/user.interface";
-import { CreateUserDto } from "./dto/create-user.dto";
-import { PrismaService } from "prisma/prisma.service";
+import { UserRepositoryInterface } from "./interface/user.interface";
+import { PrismaService } from "../../prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
-import { UpdateUserDto } from "./dto/update-user.dto";
-import { DefaultArgs } from "@prisma/client/runtime/client";
 
-// interface FindAllInterface {
-//   orderBy?:
-//     | Prisma.UserOrderByWithRelationInput
-//     | Prisma.UserOrderByWithRelationInput[]
-//     | undefined;
-//   omit?: Prisma.UserOmit<DefaultArgs> | null | undefined;
-//   include?: Prisma.UserInclude<DefaultArgs> | null | undefined;
-// }
+const omit = { password: true, createdAt: true, updatedAt: true };
 
-// a revoir
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const userWithAssignedLineAndTrain = Prisma.validator<Prisma.UserDefaultArgs>()(
+  {
+    include: { assignedLines: true, assignedTrains: true },
+    omit,
+  },
+);
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const safeUser = Prisma.validator<Prisma.UserDefaultArgs>()({
+  omit,
+});
+
+type SafeUserResponsePrisma = Prisma.UserGetPayload<typeof safeUser>;
+
+type SafeUserResponseWithAssignedLineAndTrainPrisma = Prisma.UserGetPayload<
+  typeof userWithAssignedLineAndTrain
+>;
 
 @Injectable()
 export class DatabaseUserRepository implements UserRepositoryInterface {
   constructor(private readonly prisma: PrismaService) {}
 
-  // @dev changé le prima pour ne pas prendre le createdat et le updated at?
-  async findOneByEmail(email: string): Promise<User> {
-    return this.prisma.user.findUniqueOrThrow({ where: { email } });
-  }
-
-  async create(data: CreateUserDto, status: StatusEnum): Promise<User> {
+  async create(
+    data: Prisma.UserCreateInput,
+    status: StatusEnum,
+  ): Promise<SafeUserResponsePrisma> {
     return await this.prisma.user.create({
       data: { ...data, hiredAt: new Date(data.hiredAt), status },
+      omit,
     });
   }
 
-  // async findMany(): Promise<UserSigninResponse[]> {
-  //   return this.prisma.user.findMany({
-  //     orderBy: {
-  //       createdAt: Prisma.SortOrder.desc,
-  //     },
-  //     omit: { password: true, createdAt: true, updatedAt: true },
-  //     include: {
-  //       assignedLines: {
-  //         include: { line: true },
-  //       },
-  //       assignedTrains: {
-  //         include: { train: true },
-  //       },
-  //     },
-  //   });
-  // }
-
-  async findMany(
-    omit?: Prisma.UserOmit<DefaultArgs> | null,
-    include?: Prisma.UserInclude<DefaultArgs> | null,
-    orderBy?:
-      | Prisma.UserOrderByWithRelationInput
-      | Prisma.UserOrderByWithRelationInput[],
-  ): Promise<UserSigninResponse[]> {
+  async findMany(): Promise<SafeUserResponseWithAssignedLineAndTrainPrisma[]> {
+    const orderBy = [
+      { role: Prisma.SortOrder.desc },
+      { createdAt: Prisma.SortOrder.desc },
+    ];
+    const include = {
+      assignedLines: {
+        include: { line: true },
+      },
+      assignedTrains: {
+        include: { train: true },
+      },
+    };
     return this.prisma.user.findMany({ orderBy, omit, include });
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async findOneWithAssignedLineAndTrainPrisma(
+    id: string,
+  ): Promise<SafeUserResponseWithAssignedLineAndTrainPrisma> {
+    const where: Prisma.UserWhereUniqueInput = { id };
+    const include = {
+      assignedLines: {
+        include: { line: true },
+      },
+      assignedTrains: {
+        include: { train: true },
+      },
+    };
+    return await this.prisma.user.findUniqueOrThrow({ where, omit, include });
+  }
+
+  async findOneById(id: string): Promise<SafeUserResponsePrisma> {
+    return this.prisma.user.findUniqueOrThrow({ where: { id }, omit });
+  }
+
+  async findOneByEmail(email: string): Promise<User> {
+    const omitWithPassword = { createdAt: true, updatedAt: true };
+    return this.prisma.user.findUniqueOrThrow({
+      where: { email },
+      omit: omitWithPassword,
+    });
+  }
+
+  async update(id: string, updateUserDto: Prisma.UserUpdateInput) {
     return await this.prisma.user.update({
       where: { id },
       data: { ...updateUserDto },

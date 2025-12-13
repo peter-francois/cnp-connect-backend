@@ -5,8 +5,7 @@ import {
   Body,
   Param,
   UseGuards,
-  Inject,
-  Query,
+  Patch,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -16,20 +15,24 @@ import { ResponseInterface } from "src/utils/interfaces/response.interface";
 import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
 import { SupervisorGuard } from "src/auth/guard/supervisor.guard";
 import { CoordinatorGuard } from "src/auth/guard/coordinator.guard";
-import { UserSigninResponse } from "./interface/user.interface";
+import { SafeUserResponse } from "./interface/user.interface";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
-//@UseGuards(AccesTokenGuard)
+@UseGuards(AccesTokenGuard)
 @Controller("users")
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(SupervisorGuard)
+  // @UseGuards(SupervisorGuard)
   @Post()
   async create(
     @Body() createUserDto: CreateUserDto,
     status: StatusEnum = StatusEnum.NOT_CONFIRMED,
-  ): Promise<ResponseInterface<User>> {
-    const user: User = await this.userService.createUser(createUserDto, status);
+  ): Promise<ResponseInterface<SafeUserResponse>> {
+    const user: SafeUserResponse = await this.userService.createUser(
+      createUserDto,
+      status,
+    );
     return {
       data: { user },
       message: "Un nouvel utilisation vient d'être créé",
@@ -38,23 +41,36 @@ export class UserController {
 
   // @UseGuards(CoordinatorGuard)
   @Get()
-  async findAll(): Promise<ResponseInterface<UserSigninResponse[]>> {
-    const users: UserSigninResponse[] = await this.userService.findMany();
+  // @dev put limit
+  async findAll(): Promise<ResponseInterface<SafeUserResponse[]>> {
+    const users: SafeUserResponse[] =
+      await this.userService.findManyWithLinesAndTrains();
     return {
       data: { users },
       message: "Voici tous les utilisateurs",
     };
   }
 
-  // @Get(":id")
-  // findOne(@Param("id") id: string) {
-  //   return this.userService.findOne(+id);
-  // }
+  // @dev refaire comme les autre pour avoir le meme type de retour
+  @Get(":id")
+  findOne(@Param("id") id: string) {
+    return this.userService.findOneWithLinesAndTrains(id);
+  }
 
-  // @Patch(":id")
-  // update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.userService.update(+id, updateUserDto);
-  // }
+  @Patch(":id")
+  async update(
+    @Param("id") id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<ResponseInterface<SafeUserResponse>> {
+    const userUpdated: SafeUserResponse = await this.userService.update(
+      id,
+      updateUserDto,
+    );
+    return {
+      data: { userUpdated },
+      message: "Voici l'utilisateur mis à jour",
+    };
+  }
 
   // @Delete(":id")
   // remove(@Param("id") id: string) {

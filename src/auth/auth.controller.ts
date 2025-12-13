@@ -5,25 +5,30 @@ import {
   HttpStatus,
   Req,
   UseGuards,
-  Param,
+  Get,
+  Res,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { UserService } from "src/user/user.service";
 import { SigninDto } from "./dto/signin.dto";
-import { User } from "@prisma/client";
+import { StatusEnum, TokenTypeEnum, User } from "@prisma/client";
 import { CustomException } from "src/utils/custom-exception";
 import { TokenService } from "./token.service";
 import {
-  ResponseInterface,
+  type ResponseInterface,
   ResponseInterfaceMessage,
 } from "src/utils/interfaces/response.interface";
-import { type RequestWithPayloadAndRefreshInterface } from "./interfaces/payload.interface";
+import {
+  type RequestWithPayloadSessionAndRefreshInterface,
+  type RequestWithPayloadInterface,
+} from "./interfaces/payload.interface";
 import { RefreshTokenGuard } from "./guard/refresh-token.guard";
 import { EmailService } from "src/utils/mail/email.service";
-import { EmailTokensInterface } from "./interfaces/token.interface";
-import { UserSigninResponse } from "src/user/interface/user.interface";
+import { SafeUserResponse } from "src/user/interface/user.interface";
 import { AccesTokenGuard } from "./guard/access-token.guard";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
+import type { Response } from "express";
+import { v4 as uuidv4 } from "uuid";
 
 @Controller("auth")
 export class AuthController {
@@ -31,14 +36,31 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
-    private readonly sendEmailService: EmailService,
+    private readonly emailService: EmailService,
   ) {}
+
+  @UseGuards(AccesTokenGuard)
+  @Get("me")
+  async me(
+    @Req() req: RequestWithPayloadInterface,
+  ): Promise<ResponseInterface<SafeUserResponse>> {
+    const user = await this.userService.findOneById(req.user.id);
+
+    if (
+      user.status === StatusEnum.NOT_CONFIRMED ||
+      user.status === StatusEnum.NOT_EMPLOYED
+    )
+      throw new CustomException("Forbidden", HttpStatus.FORBIDDEN, "AC-m-1");
+    return { data: { user }, message: "Utilisateur courant" };
+  }
 
   @Post("signin")
   async signin(
     @Body() body: SigninDto,
-  ): Promise<ResponseInterface<string | UserSigninResponse>> {
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<ResponseInterface<string | SafeUserResponse>> {
     let user: User = await this.userService.getUserByEmail(body.email);
+
     // compare hash
     const comparePassword: boolean = await this.authService.compare(
       user.password,
@@ -56,33 +78,47 @@ export class AuthController {
     user = await this.userService.update(user.id, { isConnected: true });
 
     // remove "password" | "createdAt" | "updatedAt" from user before send it to front
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, createdAt, updatedAt, ...userSigninResponse } = user;
+
+    const sessionId = uuidv4();
 
     // create accessToken and refreshToken
     const { accessToken, refreshToken } = await this.tokenService.createTokens(
       user.id,
-      user.role,
+      sessionId,
     );
+
+    // add access token in cookies
+    this.tokenService.addRefreshTokenInResponseAsCookie(response, refreshToken);
 
     // hash refreshToken
     const hashedRefreshToken = await this.authService.hash(refreshToken);
 
     // upsert refresh token
     // no await so, the token can be inserted in db before return => performance gain, but if exeption => client don't know about it
-    this.tokenService.upsert(user.id, hashedRefreshToken);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.tokenService.upsert(
+      user.id,
+      hashedRefreshToken,
+      TokenTypeEnum.REFRESH_TOKEN,
+      new Date(Date.now() + 24 * 60 * 60 * 1000),
+      sessionId,
+    );
 
     return {
-      data: { accessToken, refreshToken, userSigninResponse },
+      data: { accessToken, userSigninResponse },
       message: "Connexion réussie.",
     };
   }
 
+  // @dev il faudra prévoir une tache CRON pour suprimer tout les jours les refreshToken expiré
   @UseGuards(RefreshTokenGuard)
   @Post("refresh-token")
-  async refrechToken(
-    @Req() req: RequestWithPayloadAndRefreshInterface,
+  async refreshToken(
+    @Req() req: RequestWithPayloadSessionAndRefreshInterface,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<ResponseInterface<string>> {
-    // get refresh from DB
     if (!req.user)
       throw new CustomException(
         "Unauthorized",
@@ -90,13 +126,15 @@ export class AuthController {
         "AC-rt-1",
       );
 
-    const oldHashedRefresh = await this.tokenService.getRefreshToken(
+    // get old refresh token
+    const oldHashedRefreshToken = await this.tokenService.getRefreshToken(
       req.user.id,
+      req.user.sessionId,
     );
 
-    //compare tokens
+    // compare old refresh token with secure refresh token from request
     const compareTokens: boolean = await this.authService.compare(
-      oldHashedRefresh.token,
+      oldHashedRefreshToken,
       req.refreshToken,
     );
 
@@ -110,15 +148,25 @@ export class AuthController {
     // create accessToken and refreshToken
     const { accessToken, refreshToken } = await this.tokenService.createTokens(
       req.user.id,
-      req.user.role,
+      req.user.sessionId,
     );
+
+    // add access token in cookies
+    this.tokenService.addRefreshTokenInResponseAsCookie(response, refreshToken);
 
     const hahedRefreshToken = await this.authService.hash(refreshToken);
 
-    this.tokenService.upsert(req.user.id, hahedRefreshToken);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.tokenService.upsert(
+      req.user.id,
+      hahedRefreshToken,
+      TokenTypeEnum.REFRESH_TOKEN,
+      new Date(Date.now() + 24 * 60 * 60 * 1000), // now + 1 day
+      req.user.sessionId,
+    );
 
     return {
-      data: { accessToken, refreshToken },
+      data: { accessToken },
       message: "Connexion réussis.",
     };
   }
@@ -129,55 +177,43 @@ export class AuthController {
   ): Promise<ResponseInterfaceMessage> {
     const user = await this.userService.getUserByEmail(body.email);
 
-    if (!user)
-      throw new CustomException("Not found", HttpStatus.NOT_FOUND, "AC-srpe-1");
-    // const isResetPasswordMailSend = this.userService.sendResetPasswordMail(user)
-    const token = this.tokenService.generateEmailToken();
+    await this.emailService.sendResetPassword(user);
 
-    await this.tokenService.upsert(
-      user.id,
-      token,
-      "RESET_PASSWORD",
-      new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
-    );
-
-    await this.sendEmailService.sendEmail(
-      user.email,
-      "Test SMTP Brevo NestJS via CNP Connect",
-      `<h1>Bonjour ${user.firstName}</h1>
-          <p>Email envoyé via Cnp-Connect 🚀</p>
-          <a href="http://localhost:3000/auth/change-password?token=${token}">
-            Cliquez ici pour réinitialiser votre mot de passe
-          </a>`,
-    );
-
-    return { message: "L'Email est bien envoyé" };
+    return {
+      message:
+        "Si vous avez un compte, un e-mail de réinitialisation de mot de passe a été envoyé.",
+    };
   }
 
-  @Post("resetPassword/:token/")
+  @Post("reset-password")
   async resetPassword(
     @Body() body: ResetPasswordDto,
-    @Param("token") token: string,
   ): Promise<ResponseInterfaceMessage> {
-    const { password, confirmPassword } = body;
-
+    const { password, confirmPassword, token } = body;
     const userId = await this.tokenService.getUserIdByToken(token);
 
     if (password !== confirmPassword)
       throw new CustomException(
         "BadRequest",
         HttpStatus.BAD_REQUEST,
-        "As-cp-1",
+        "AC-rp-1",
       );
 
-    // check if not same password
-
     await this.authService.resetPassword(body, userId);
-
+    await this.tokenService.delete(token);
     return {
       message: "Mot de passe modifié avec succés.",
     };
   }
-}
 
-// http://localhost:3000/auth/change-password?token=05c0ea12-93bb-4c44-adf0-6f0d54af33fc
+  @UseGuards(RefreshTokenGuard)
+  @Post("signout")
+  async signout(
+    @Req() req: RequestWithPayloadSessionAndRefreshInterface,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<ResponseInterfaceMessage> {
+    await this.authService.signout(req.user.id, req.user.sessionId);
+    this.tokenService.removeRefreshTokenInResponseAsCookie(response);
+    return { message: "Déconnexion réussie." };
+  }
+}

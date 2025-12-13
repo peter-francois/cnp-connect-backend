@@ -48,25 +48,25 @@ enum RoleEnum {
 enum StatusEnum {
   NOT_CONFIRMED
   CONFIRMED
-  NOTEMPLOYED // deactivate reset password
+  NOT_EMPLOYED // deactivate reset password
 }
 
+// @dev voir pour le multiplatforme
 model Token {
-  token     String        @unique
+  sessionId String?        @unique
+  token     String        @id
   type      TokenTypeEnum
   userId    String
   user      User          @relation(fields: [userId], references: [id])
   createdAt DateTime      @default(now())
   expiresAt DateTime?
 
-  @@id([type, userId])
-  @@index([token])
+  @@index([type, userId])
 }
 
 enum TokenTypeEnum {
   REFRESH_TOKEN
   RESET_PASSWORD
-  ACTIVATE_PASSWORD
 }
 
 model UserIsInConversation {

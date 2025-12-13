@@ -1,12 +1,14 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { JwtService, JwtSignOptions } from "@nestjs/jwt";
-import { TokenTypeEnum, Token, RoleEnum } from "@prisma/client";
-import { PrismaService } from "prisma/prisma.service";
-import { PayloadInterface } from "./interfaces/payload.interface";
+import { TokenTypeEnum, Token, User } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
+import {
+  PayloadInterface,
+  PayloadWithSessionIdInterface,
+} from "./interfaces/payload.interface";
 import { TokensInterface } from "./interfaces/token.interface";
-import { Request } from "express";
-import { CustomException } from "src/utils/custom-exception";
-import { AuthService } from "./auth.service";
+import { Request, Response } from "express";
+import { CustomException } from "../utils/custom-exception";
 import { v4 as uuidv4 } from "uuid";
 
 // add salt ?
@@ -16,11 +18,10 @@ export class TokenService {
   constructor(
     private jwtService: JwtService,
     private prisma: PrismaService,
-    private authService: AuthService,
   ) {}
 
   async generateJwt(
-    payload: PayloadInterface,
+    payload: PayloadInterface | PayloadWithSessionIdInterface,
     options: JwtSignOptions,
   ): Promise<string> {
     return await this.jwtService.signAsync(payload, options);
@@ -31,36 +32,47 @@ export class TokenService {
     token: string,
     type: TokenTypeEnum = TokenTypeEnum.REFRESH_TOKEN,
     expiresAt?: Date,
+    sessionId?: string,
   ): Promise<Token> {
+    if (type === TokenTypeEnum.REFRESH_TOKEN) {
+      return await this.prisma.token.upsert({
+        create: {
+          userId,
+          token,
+          expiresAt,
+          type,
+          sessionId,
+        },
+        where: { userId, sessionId },
+        update: { token, expiresAt },
+      });
+    }
     return await this.prisma.token.upsert({
       create: { userId, token, expiresAt, type },
-      where: { type_userId: { type, userId } },
+      where: { token },
       update: { token, expiresAt },
     });
   }
 
-  async getRefreshToken(
-    userId: string,
-    type: TokenTypeEnum = TokenTypeEnum.REFRESH_TOKEN,
-  ): Promise<Token> {
-    return await this.prisma.token.findUniqueOrThrow({
-      where: { type_userId: { type, userId } },
+  async getRefreshToken(userId: string, sessionId: string): Promise<string> {
+    const tokenObject: Token = await this.prisma.token.findUniqueOrThrow({
+      where: { userId, sessionId },
     });
+    return tokenObject.token;
   }
 
-  async createTokens(id: string, role: RoleEnum): Promise<TokensInterface> {
+  async createTokens(id: string, sessionId: string): Promise<TokensInterface> {
     const accessToken: string = await this.generateJwt(
-      { id, role },
+      { id },
       {
         algorithm: "HS256",
-        // expiresIn: "15m",
-        expiresIn: "1h",
+        expiresIn: "15m",
         secret: process.env.ACCESS_JWT_SECRET,
       },
     );
 
     const refreshToken: string = await this.generateJwt(
-      { id, role },
+      { id, sessionId },
       {
         algorithm: "HS256",
         expiresIn: "1d",
@@ -71,28 +83,76 @@ export class TokenService {
     return { accessToken, refreshToken };
   }
 
+  async delete(token: string): Promise<void> {
+    await this.prisma.token.delete({ where: { token } });
+  }
+
+  async deleteRefreshToken(userId: string, sessionId: string): Promise<void> {
+    await this.prisma.token.delete({
+      where: { userId, sessionId },
+    });
+  }
+
   extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(" ") ?? [];
     return type === process.env.TOKEN_TYPE ? token : undefined;
   }
 
-  generateEmailToken(): string {
-    try {
-      const uuid: string = uuidv4();
-      return uuid;
-    } catch {
-      throw new CustomException(
-        "Error generating UUID",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "TS-get-1",
-      );
-    }
+  extractTokenCookie(request: Request): string {
+    const tokenFromCookie: string = request.cookies["refreshToken"];
+    return tokenFromCookie;
+  }
+
+  async generateTokenUuid(user: User): Promise<string> {
+    const uuid: string = uuidv4();
+
+    await this.upsert(
+      user.id,
+      uuid,
+      "RESET_PASSWORD",
+      new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+    );
+    return uuid;
   }
 
   async getUserIdByToken(token: string): Promise<string> {
-    const tokenField = await this.prisma.token.findUniqueOrThrow({
+    const tokenObject = await this.prisma.token.findUniqueOrThrow({
       where: { token },
     });
-    return tokenField.userId;
+
+    if (tokenObject.expiresAt && tokenObject.expiresAt <= new Date()) {
+      await this.prisma.token.delete({ where: { token } });
+
+      throw new CustomException(
+        "Token expired",
+        HttpStatus.UNAUTHORIZED,
+        "TS-guidbt-1",
+      );
+    }
+
+    return tokenObject.userId;
+  }
+
+  addRefreshTokenInResponseAsCookie(
+    response: Response,
+    refreshToken: string,
+  ): void {
+    response.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 24 * 3600 * 1000,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      path: "/auth",
+    });
+  }
+
+  removeRefreshTokenInResponseAsCookie(response: Response): void {
+    response.cookie("refreshToken", "", {
+      httpOnly: true,
+      expires: new Date(0),
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      path: "/auth",
+    });
   }
 }
