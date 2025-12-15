@@ -1,20 +1,17 @@
-import { Type } from "class-transformer";
+import { PartialType } from "@nestjs/mapped-types";
+import { CreateGroupDto } from "./create-group.dto";
 import {
   ArrayMinSize,
   IsArray,
-  IsNumber,
-  IsOptional,
   IsString,
   ValidateNested,
 } from "class-validator";
+import { Type } from "class-transformer";
 import { MemberDto } from "./member.dto";
 
-export class CreateGroupDto {
+export class UpdateGroupDto extends PartialType(CreateGroupDto) {
   @IsString()
   name: string;
-
-  @IsNumber()
-  ownerId: number;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -23,6 +20,5 @@ export class CreateGroupDto {
   members: MemberDto[];
 
   @IsString()
-  @IsOptional()
   avatar?: string;
 }

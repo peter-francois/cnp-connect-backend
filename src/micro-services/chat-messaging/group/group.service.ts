@@ -3,10 +3,12 @@ import { lastValueFrom } from "rxjs";
 import { Group } from "./entities/group.entity";
 import { CreateGroupDto } from "./dto/create-group.dto";
 import { ClientNatsBase } from "../client-nats-base";
+import { UpdateGroupDto } from "./dto/update-group.dto";
+import { MemberDto } from "./dto/member.dto";
 
 @Injectable()
 export class GroupService extends ClientNatsBase {
-  async createGroup(createGroupeDto: CreateGroupDto) {
+  async create(createGroupeDto: CreateGroupDto) {
     const responce: Group = await lastValueFrom(
       this.clientNats.send("group.create", createGroupeDto),
     );
@@ -14,19 +16,39 @@ export class GroupService extends ClientNatsBase {
   }
 
   async findAll() {
-    const responce: Group = await lastValueFrom(
+    const responce: Group[] = await lastValueFrom(
       this.clientNats.send("group.findAll", {}),
     );
     return responce;
   }
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} chatMessaging`;
-  // }
+  async findOne(id: string) {
+    const responce: Group[] = await lastValueFrom(
+      this.clientNats.send("group.findOne", id),
+    );
+    return responce;
+  }
 
-  // update(id: number, updateChatMessagingDto: UpdateChatMessagingDto) {
-  //   return `This action updates a #${id} chatMessaging`;
-  // }
+  async update(id: string, updateGroup: UpdateGroupDto) {
+    const response: Group = await lastValueFrom(
+      this.clientNats.send("group.update", { id, ...updateGroup }),
+    );
+    return response;
+  }
+
+  async addMember(id: string, member: MemberDto) {
+    const response: Group = await lastValueFrom(
+      this.clientNats.send("group.addMember", { id, member }),
+    );
+    return response;
+  }
+
+  async removeMember(id: string, userId: string) {
+    const response: Group = await lastValueFrom(
+      this.clientNats.send("group.removeMember", { id, userId }),
+    );
+    return response;
+  }
 
   async deleteOne(_id: string) {
     await lastValueFrom(this.clientNats.send("group.remove", _id));
