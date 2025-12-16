@@ -1,12 +1,10 @@
 import { Module } from "@nestjs/common";
-import { GroupController } from "./group/group.controller";
-import { GroupService } from "./group/group.service";
-import { NatsClientModule } from "../nats-client.module";
+import { ConversationModule } from "./conversation/conversation.module";
+import { MessageModule } from "./message/message.module";
+import { NatsClientModule } from "../../utils/client-nats/nats-client.module";
+import { GroupModule } from "./group/group.module";
 
 @Module({
-  controllers: [GroupController],
-  providers: [GroupService],
-  imports: [NatsClientModule],
-  exports: [GroupService],
+  imports: [NatsClientModule, ConversationModule, MessageModule, GroupModule],
 })
 export class ChatMessagingModule {}

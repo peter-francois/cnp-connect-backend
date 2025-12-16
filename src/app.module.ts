@@ -16,6 +16,7 @@ import { ChatMessagingModule } from "./micro-services/chat-messaging/chat-messag
     ConfigModule.forRoot(),
     ChatMessagingModule,
   ],
+  // @dev ne devrais pas avoir de TokenService
   providers: [TokenService],
 })
 export class AppModule {}

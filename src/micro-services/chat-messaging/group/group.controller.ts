@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
 } from "@nestjs/common";
 import { Group } from "./entities/group.entity";
 import {
@@ -34,7 +33,7 @@ export class GroupController {
   }
 
   @Get()
-  async findAll() {
+  async findAll(): Promise<ResponseInterface<Group[]>> {
     const groups = await this.groupService.findAll();
     return {
       data: { groups },
