@@ -1,26 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
+import { Injectable } from "@nestjs/common";
+import { SendMessageDto } from "./dto/create-message.dto";
+import { UpdateMessageDto } from "./dto/update-message.dto";
+import { ClientNatsBase } from "src/utils/client-nats/client-nats-base";
+import { lastValueFrom } from "rxjs";
+import { Message } from "./entities/message.entity";
 
 @Injectable()
-export class MessageService {
-  create(createMessageDto: CreateMessageDto) {
-    return 'This action adds a new message';
+export class MessageService extends ClientNatsBase {
+  async send(sendMessageDto: SendMessageDto) {
+    const responce: Message = await lastValueFrom(
+      this.clientNats.send("message.send", sendMessageDto),
+    );
+    return responce;
   }
 
-  findAll() {
-    return `This action returns all message`;
+  async update(id: string, updateMessageDto: UpdateMessageDto) {
+    const response: Message = await lastValueFrom(
+      this.clientNats.send("message.update", { id, ...updateMessageDto }),
+    );
+    return response;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} message`;
-  }
-
-  update(id: number, updateMessageDto: UpdateMessageDto) {
-    return `This action updates a #${id} message`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} message`;
+  async remove(id: string) {
+    const response: Message = await lastValueFrom(
+      this.clientNats.send("message.deleteOne", { id }),
+    );
+    return response;
   }
 }
