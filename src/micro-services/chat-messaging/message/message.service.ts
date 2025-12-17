@@ -9,7 +9,7 @@ import { Message } from "./entities/message.entity";
 export class MessageService extends ClientNatsBase {
   async send(sendMessageDto: SendMessageDto) {
     const responce: Message = await lastValueFrom(
-      this.clientNats.send("message.send", sendMessageDto),
+      this.clientNats.emit("message.sent", sendMessageDto),
     );
     return responce;
   }

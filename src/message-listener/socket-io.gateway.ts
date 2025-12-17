@@ -4,13 +4,17 @@ import { Injectable } from "@nestjs/common";
 
 @WebSocketGateway({
   cors: {
-    origin: "*",
+    origin: "http://localhost:5173",
+    credentials: true,
   },
 })
 @Injectable()
-export abstract class ChatGateway {
+export class ChatGateway {
   @WebSocketServer()
   server: Server;
+  afterInit() {
+    console.log("🔥 Socket.IO initialized");
+  }
 
   sendMessage(message: any) {
     this.server.emit("message", message);
