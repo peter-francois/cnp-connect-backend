@@ -23,15 +23,18 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.1.0",
     "@nestjs-modules/mailer": "^2.0.2",
-    "@nestjs/common": "^11.0.1",
     "@nestjs/cli": "^11.0.0",
+    "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/microservices": "^11.1.8",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.1.9",
+    "@nestjs/websockets": "^11.1.9",
     "@prisma/client": "^6.16.2",
     "argon2": "^0.44.0",
     "class-transformer": "^0.5.1",
@@ -39,7 +42,6 @@
     "cookie-parser": "^1.4.7",
     "crypto-js": "^4.2.0",
     "nats": "^2.29.3",
-    "@faker-js/faker": "^10.1.0",
     "nestjs-uuid": "^0.1.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
