@@ -143,6 +143,7 @@ export class TokenService {
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
       path: "/auth",
+      // path: "/api/auth",
     });
   }
 
@@ -153,6 +154,7 @@ export class TokenService {
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
       path: "/auth",
+      // path: "/api/auth",
     });
   }
 }
