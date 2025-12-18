@@ -78,7 +78,7 @@ describe("UserService", () => {
 
       expect(result).toBeDefined();
       expect(result).toBe(user);
-      expect(prismaMock.user.findUniqueOrThrow).toHaveBeenCalledTimes(1);
+      expect(prismaMock.user.findUniqueOrThrow).toHaveBeenCalledTimes(2);
       expect(prismaMock.user.findUniqueOrThrow).toHaveBeenCalledWith({
         where: { email: emailExist },
         omit: {
