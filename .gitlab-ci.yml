@@ -6,32 +6,33 @@ default:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
 stages:
-  - test
   - build
+  - test
   - deploy
+
+build:
+  stage: build
+  
+  script:
+    - docker build -f dockerfile.dev -t $CI_REGISTRY_IMAGE:$TAG_TEST .
+    - docker push $CI_REGISTRY_IMAGE:$TAG_TEST
+  rules:
+    - if: $CI_COMMIT_BRANCH
 
 test:
   stage: test
+  needs: ["build"]
   script:
-    - docker build -f dockerfile.dev .
+    - docker pull $CI_REGISTRY_IMAGE:$TAG_TEST
     - docker exec $CI_REGISTRY_IMAGE:$TAG_TEST npm run test
   rules:
     - if: $CI_COMMIT_BRANCH
 
-build:
-  stage: build
-  needs: ["test"]
-  script:
-    - docker build -f dockerfile.prod .
-  rules:
-    - if: $CI_COMMIT_BRANCH
-
-
 deploy:
   stage: deploy
-  needs: ["build"]
+  needs: ["test"]
   script:
-    - docker build -f dockerfile.prod .
+    - docker build -f dockerfile.prod -t $CI_REGISTRY_IMAGE:$TAG_PROD .
     - docker push $CI_REGISTRY_IMAGE:$TAG_PROD
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
