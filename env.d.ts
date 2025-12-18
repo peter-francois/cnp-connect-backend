@@ -4,5 +4,6 @@ declare namespace NodeJS {
     ACCESS_JWT_SECRET: string;
     REFRESH_JWT_SECRET: string;
     PORT: number;
+    FRONTEND_URL: string;
   }
 }
