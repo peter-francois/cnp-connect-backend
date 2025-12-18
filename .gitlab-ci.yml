@@ -1,17 +1,8 @@
 stages:
-  - build
+
   - test
   - deploy
 
-build:
-  image: docker:stable
-  stage: build
-  services:
-  - docker:dind
-  script:
-    - docker build -t $CI_REGISTRY_IMAGE:$TAG_BUILD .
-  rules:
-    - when: manual
 
 test:
   image: docker:stable
