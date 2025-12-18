@@ -7,7 +7,6 @@ dist
 .env.local
 .vscode
 *.md
-test
 coverage
 .dockerignore
 Dockerfile
