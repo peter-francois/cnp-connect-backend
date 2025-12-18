@@ -1,4 +1,9 @@
-
+default:
+  image: docker:stable
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
 stages:
   - build
@@ -6,39 +11,27 @@ stages:
   - deploy
 
 build:
-  image: docker:stable
-  services:
-    - docker:dind
-  before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   stage: build
   script:
-    - docker build -t $CI_REGISTRY_IMAGE:$TAG_BUILD .
-    - docker push $CI_REGISTRY_IMAGE:$TAG_BUILD
+    - docker build -f dockerfile.dev -t $CI_REGISTRY_IMAGE:$TAG_TEST .
+    - docker push $CI_REGISTRY_IMAGE:$TAG_TEST
   rules:
     - if: $CI_COMMIT_BRANCH
 
 test:
-  image: node:20-alpine
   stage: test
+  needs: ["build"]
   script:
-    - npm ci
-    - npm run test
+    - docker pull $CI_REGISTRY_IMAGE:$TAG_TEST
+    - docker --rm exec $CI_REGISTRY_IMAGE:$TAG_TEST npm run test
   rules:
     - if: $CI_COMMIT_BRANCH
 
 deploy:
-  image: docker:stable
-  services:
-    - docker:dind
-  before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   stage: deploy
   needs: ["test"]
   script:
-    - docker pull $CI_REGISTRY_IMAGE:$TAG_BUILD
-    # example: tag as latest or deploy to server
-    - docker tag $CI_REGISTRY_IMAGE:$TAG_BUILD $CI_REGISTRY_IMAGE:latest
-    - docker push $CI_REGISTRY_IMAGE:latest
+    - docker build -f dockerfile.prod -t $CI_REGISTRY_IMAGE:$TAG_PROD .
+    - docker push $CI_REGISTRY_IMAGE:$TAG_PROD
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
