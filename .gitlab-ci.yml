@@ -1,9 +1,4 @@
-default:
-  image: docker:stable
-  services:
-    - docker:dind
-  before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+
 
 stages:
   - build
@@ -11,6 +6,11 @@ stages:
   - deploy
 
 build:
+  image: docker:stable
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   stage: build
   script:
     - docker build -t $CI_REGISTRY_IMAGE:$TAG_BUILD .
@@ -19,15 +19,20 @@ build:
     - if: $CI_COMMIT_BRANCH
 
 test:
+  image: node:20-alpine
   stage: test
-  needs: ["build"]
   script:
-    - docker pull $CI_REGISTRY_IMAGE:$TAG_BUILD
-    - docker run --rm $CI_REGISTRY_IMAGE:$TAG_BUILD npm run test
+    - npm ci
+    - npm run test
   rules:
     - if: $CI_COMMIT_BRANCH
 
 deploy:
+  image: docker:stable
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   stage: deploy
   needs: ["test"]
   script:
