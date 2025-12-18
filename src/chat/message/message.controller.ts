@@ -10,18 +10,13 @@ import {
 import { MessageService } from "./message.service";
 import { SendMessageDto } from "./dto/create-message.dto";
 import { UpdateMessageDto } from "./dto/update-message.dto";
-import { ChatGateway } from "src/message-listener/socket-io.gateway";
 
 @Controller("messages")
 export class MessageController {
-  constructor(
-    private readonly messageService: MessageService,
-    private readonly chatGateway: ChatGateway,
-  ) {}
+  constructor(private readonly messageService: MessageService) {}
 
   @Post()
   create(@Body() sendMessageDto: SendMessageDto) {
-    this.chatGateway.sendMessage(sendMessageDto);
     return this.messageService.send(sendMessageDto);
   }
 

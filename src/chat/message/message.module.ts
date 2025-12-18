@@ -2,12 +2,11 @@ import { Module } from "@nestjs/common";
 import { MessageService } from "./message.service";
 import { MessageController } from "./message.controller";
 import { NatsClientModule } from "src/utils/client-nats/nats-client.module";
-import { ChatGateway } from "src/message-listener/socket-io.gateway";
-import { MessageListenerService } from "src/message-listener/messageListener.service";
+import { ChatGateway } from "./gateways/chat.gateway";
 
 @Module({
   controllers: [MessageController],
-  providers: [MessageService, ChatGateway, MessageListenerService],
+  providers: [MessageService, ChatGateway],
   imports: [NatsClientModule],
 })
 export class MessageModule {}

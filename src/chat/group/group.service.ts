@@ -5,7 +5,7 @@ import { CreateGroupDto } from "./dto/create-group.dto";
 
 import { UpdateGroupDto } from "./dto/update-group.dto";
 import { MemberDto } from "./dto/member.dto";
-import { ClientNatsBase } from "../../../utils/client-nats/client-nats-base";
+import { ClientNatsBase } from "../../utils/client-nats/client-nats-base";
 
 @Injectable()
 export class GroupService extends ClientNatsBase {
