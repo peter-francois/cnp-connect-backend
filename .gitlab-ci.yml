@@ -10,6 +10,8 @@ build:
     - docker build -t $CI_REGISTRY_IMAGE:$TAG_BUILD .
   tags:
     - docker
+  rules:
+    - when: manual
 
 test:
   image: docker:stable
@@ -27,5 +29,4 @@ deploy:
   script:
     - docker build -t $CI_REGISTRY_IMAGE:$TAG_BUILD .
     - docker push $CI_REGISTRY_IMAGE:$TAG_BUILD
-  rules:
-    - when: manual
+
