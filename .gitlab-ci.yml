@@ -1,6 +1,23 @@
-build-push-app:
-  image: docker:stable
+stages:
+  - build
+  - test
+  - deploy
+
+build:
   stage: build
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:$TAG_BUILD .
+  tags:
+    - docker
+
+test:
+  stage: test
+  script:
+    - docker run $CI_REGISTRY_IMAGE:$TAG_BUILD npm run test
+
+deploy:
+  image: docker:stable
+  stage: deploy
   services:
     - docker:dind
   before_script:
@@ -8,5 +25,7 @@ build-push-app:
   script:
     - docker build -t $CI_REGISTRY_IMAGE:$TAG_BUILD .
     - docker push $CI_REGISTRY_IMAGE:$TAG_BUILD
+  only:
+    - main
   rules:
     - when: manual

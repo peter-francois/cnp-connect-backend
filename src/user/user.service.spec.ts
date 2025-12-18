@@ -49,20 +49,17 @@ describe("UserService", () => {
       avatarUrl: null,
       role: RoleEnum.DRIVER,
     };
-    const error = {
-      prismaCode: "P2025",
-      timestamp: new Date(),
-      path: "/auth/signin",
-      message: "Record does not exist",
-      requestBody: {
-        email: "florian44@hotmail.com",
-      },
-    };
 
-    it("Should return a notFound errror when the email is not exist", async () => {
-      prismaMock.user.findUniqueOrThrow.mockResolvedValue(error);
-      const result = await userService.getUserByEmail(emailNotExist);
-      expect(result).toBe(error);
+    it("should throw a not found error when the email does not exist", async () => {
+      // Prisma lance une exception quand aucun utilisateur n'est trouvé
+      prismaMock.user.findUniqueOrThrow.mockRejectedValue(
+        new Error("Record does not exist"),
+      );
+
+      await expect(userService.getUserByEmail(emailNotExist)).rejects.toThrow(
+        "Record does not exist",
+      );
+
       expect(prismaMock.user.findUniqueOrThrow).toHaveBeenCalledTimes(1);
       expect(prismaMock.user.findUniqueOrThrow).toHaveBeenCalledWith({
         where: { email: emailNotExist },
