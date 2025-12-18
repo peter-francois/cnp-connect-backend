@@ -10,26 +10,26 @@ stages:
   - test
   - deploy
 
-build:
-  stage: build
+test:
+  stage: test
   script:
     - docker build -f dockerfile.dev -t $CI_REGISTRY_IMAGE:$TAG_TEST .
-    - docker push $CI_REGISTRY_IMAGE:$TAG_TEST
+    - docker exec $CI_REGISTRY_IMAGE:$TAG_TEST npm run test
   rules:
     - if: $CI_COMMIT_BRANCH
 
-test:
-  stage: test
-  needs: ["build"]
+build:
+  stage: build
+  needs: ["test"]
   script:
-    - docker pull $CI_REGISTRY_IMAGE:$TAG_TEST
-    - docker --rm exec $CI_REGISTRY_IMAGE:$TAG_TEST npm run test
+    - docker build -f dockerfile.prod -t $CI_REGISTRY_IMAGE:$TAG_PROD .
   rules:
     - if: $CI_COMMIT_BRANCH
+
 
 deploy:
   stage: deploy
-  needs: ["test"]
+  needs: ["build"]
   script:
     - docker build -f dockerfile.prod -t $CI_REGISTRY_IMAGE:$TAG_PROD .
     - docker push $CI_REGISTRY_IMAGE:$TAG_PROD
