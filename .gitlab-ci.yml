@@ -4,6 +4,7 @@ stages:
   - deploy
 
 build:
+  image: docker:stable
   stage: build
   script:
     - docker build -t $CI_REGISTRY_IMAGE:$TAG_BUILD .
@@ -11,6 +12,7 @@ build:
     - docker
 
 test:
+  image: docker:stable
   stage: test
   script:
     - docker run $CI_REGISTRY_IMAGE:$TAG_BUILD npm run test
