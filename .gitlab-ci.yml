@@ -17,7 +17,7 @@ build:
     - docker build -f dockerfile.dev -t $CI_REGISTRY_IMAGE:$TAG_TEST .
     - docker push $CI_REGISTRY_IMAGE:$TAG_TEST
   rules: 
-    - manual
+    - if: $CI_COMMIT_BRANCH
 
 test:
   stage: test
@@ -26,7 +26,7 @@ test:
     - docker pull $CI_REGISTRY_IMAGE:$TAG_TEST
     - docker run --rm $CI_REGISTRY_IMAGE:$TAG_TEST npm run test
   rules: 
-    - manual
+    - if: $CI_COMMIT_BRANCH
 
 deploy:
   stage: deploy
