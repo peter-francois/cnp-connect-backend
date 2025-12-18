@@ -21,7 +21,7 @@ build:
 test:
   stage: test
   script:
-    - docker exec $CI_REGISTRY_IMAGE:$TAG_BUILD npm run test
+    - npm run test
   rules:
     - if: $CI_COMMIT_BRANCH
 
