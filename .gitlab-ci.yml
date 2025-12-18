@@ -16,7 +16,8 @@ build:
   script:
     - docker build -f dockerfile.dev -t $CI_REGISTRY_IMAGE:$TAG_TEST .
     - docker push $CI_REGISTRY_IMAGE:$TAG_TEST
-  rules: manual
+  rules: 
+    - manual
 
 test:
   stage: test
