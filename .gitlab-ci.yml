@@ -25,7 +25,5 @@ deploy:
   script:
     - docker build -t $CI_REGISTRY_IMAGE:$TAG_BUILD .
     - docker push $CI_REGISTRY_IMAGE:$TAG_BUILD
-  only:
-    - main
   rules:
     - when: manual
