@@ -19,7 +19,7 @@ test:
   services:
   - docker:dind
   script:
-    - docker run $CI_REGISTRY_IMAGE:$TAG_BUILD npm run test
+    - docker run $CI_REGISTRY_IMAGE:$TAG_BUILD npm test
 
 deploy:
   image: docker:stable
