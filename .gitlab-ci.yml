@@ -13,7 +13,7 @@ stages:
 test:
   stage: test
   script:
-    - docker build -f dockerfile.dev -t $CI_REGISTRY_IMAGE:$TAG_TEST .
+    - docker build -f dockerfile.dev .
     - docker exec $CI_REGISTRY_IMAGE:$TAG_TEST npm run test
   rules:
     - if: $CI_COMMIT_BRANCH
@@ -22,7 +22,7 @@ build:
   stage: build
   needs: ["test"]
   script:
-    - docker build -f dockerfile.prod -t $CI_REGISTRY_IMAGE:$TAG_PROD .
+    - docker build -f dockerfile.prod .
   rules:
     - if: $CI_COMMIT_BRANCH
 
@@ -31,7 +31,7 @@ deploy:
   stage: deploy
   needs: ["build"]
   script:
-    - docker build -f dockerfile.prod -t $CI_REGISTRY_IMAGE:$TAG_PROD .
+    - docker build -f dockerfile.prod .
     - docker push $CI_REGISTRY_IMAGE:$TAG_PROD
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
