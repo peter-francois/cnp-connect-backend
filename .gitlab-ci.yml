@@ -24,7 +24,7 @@ test:
   needs: ["build"]
   script:
     - docker pull $CI_REGISTRY_IMAGE:$TAG_TEST
-    - docker exec $CI_REGISTRY_IMAGE:$TAG_TEST npm run test
+    - docker run --rm $CI_REGISTRY_IMAGE:$TAG_TEST npm run test
   rules:
     - if: $CI_COMMIT_BRANCH
 
