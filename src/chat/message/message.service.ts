@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { SendMessageDto } from "./dto/create-message.dto";
 import { UpdateMessageDto } from "./dto/update-message.dto";
-import { ClientNatsBase } from "src/utils/client-nats/client-nats-base";
 import { lastValueFrom } from "rxjs";
 import { Message } from "./entities/message.entity";
+import { ClientNatsBase } from "src/utils/client-nats/nats-client-base";
 
 @Injectable()
 export class MessageService extends ClientNatsBase {

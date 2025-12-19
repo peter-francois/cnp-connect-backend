@@ -4,6 +4,7 @@ import { ValidationPipe } from "@nestjs/common";
 import { PrismaExeptionFilter } from "./utils/filters/prisma-exeption.filter";
 import { CustomExceptionFilter } from "./utils/filters/custom-exception.filter";
 import cookieParser from "cookie-parser";
+import { SocketIoAdapter } from "./utils/websocket/socket-io-adapter";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,7 +20,7 @@ async function bootstrap() {
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   });
-
+  app.useWebSocketAdapter(new SocketIoAdapter(app));
   app.use(cookieParser());
   app.useGlobalFilters(new PrismaExeptionFilter(), new CustomExceptionFilter());
   await app.listen(process.env.PORT ?? 3001);

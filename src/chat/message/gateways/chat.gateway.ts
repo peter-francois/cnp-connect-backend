@@ -30,13 +30,13 @@ const VALID_TOKEN = "SECRET_TOKEN_123";
     origin: "*",
   },
 })
-export class ChatGateway
+export class ChatGatewayOld
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
   private server: Server;
 
-  private readonly logger = new Logger(ChatGateway.name);
+  private readonly logger = new Logger(ChatGatewayOld.name);
   private readonly connectedUsers = new Map<string, string>();
 
   private userCounter = 0;

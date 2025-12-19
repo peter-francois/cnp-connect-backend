@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { CreateConversationDto } from "./dto/create-conversation.dto";
 import { UpdateConversationDto } from "./dto/update-conversation.dto";
-import { ClientNatsBase } from "src/utils/client-nats/client-nats-base";
 import { Conversation } from "./entities/conversation.entity";
 import { lastValueFrom } from "rxjs";
 import { ParticipantDto } from "./dto/participant.dto";
+import { ClientNatsBase } from "src/utils/client-nats/nats-client-base";
 
 @Injectable()
 export class ConversationService extends ClientNatsBase {

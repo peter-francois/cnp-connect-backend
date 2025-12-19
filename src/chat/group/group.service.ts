@@ -2,10 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
 import { Group } from "./entities/group.entity";
 import { CreateGroupDto } from "./dto/create-group.dto";
-
 import { UpdateGroupDto } from "./dto/update-group.dto";
 import { MemberDto } from "./dto/member.dto";
-import { ClientNatsBase } from "../../utils/client-nats/client-nats-base";
+import { ClientNatsBase } from "src/utils/client-nats/nats-client-base";
 
 @Injectable()
 export class GroupService extends ClientNatsBase {
