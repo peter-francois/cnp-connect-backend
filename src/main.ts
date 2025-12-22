@@ -22,7 +22,6 @@ async function bootstrap() {
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   });
-  app.setGlobalPrefix("api");
   app.use(cookieParser());
   app.useGlobalFilters(new PrismaExeptionFilter(), new CustomExceptionFilter());
   await app.listen(process.env.PORT ?? 3000);
