@@ -1,8 +1,6 @@
 import { IoAdapter } from "@nestjs/platform-socket.io";
 import { Server, Socket } from "socket.io";
 
-const VALID_TOKEN = "SECRET_TOKEN_123";
-
 export class SocketIoAdapter extends IoAdapter {
   createIOServer(port: number, options?: any) {
     const server: Server = super.createIOServer(port, {
@@ -19,7 +17,7 @@ export class SocketIoAdapter extends IoAdapter {
           socket.handshake.auth.token ||
           (socket.handshake.query.token as string);
 
-        if (token !== VALID_TOKEN) {
+        if (token !== process.env.TOKENSOCKETIO) {
           console.warn(`Connection rejected: Invalid token "${token}"`);
           return next(new Error("Invalid authentication token"));
         }

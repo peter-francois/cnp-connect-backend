@@ -18,7 +18,7 @@ export class SupervisorGuard implements CanActivate {
       .switchToHttp()
       .getRequest();
 
-    const user = await this.userService.findOneById(request.user.id);
+    const user = await this.userService.findOneSafeById(request.user.id);
     if (user.role !== RoleEnum.SUPERVISOR) {
       throw new CustomException(
         "You do not have permission to access this resource",

@@ -27,8 +27,7 @@ export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Send welcome message to the new client
       const welcomeMessage: any = {
-        type: "welcome",
-        assignedUsername: username,
+        username,
       };
       client.emit("welcome", welcomeMessage);
 

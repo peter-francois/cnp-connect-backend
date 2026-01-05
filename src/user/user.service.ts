@@ -30,7 +30,7 @@ export class UserService {
     return await this.userRepository.findOneWithAssignedLineAndTrainPrisma(id);
   }
 
-  async findOneById(id: string): Promise<SafeUserResponse> {
+  async findOneSafeById(id: string): Promise<SafeUserResponse> {
     return await this.userRepository.findOneById(id);
   }
 

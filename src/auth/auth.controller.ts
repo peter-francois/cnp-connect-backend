@@ -44,14 +44,14 @@ export class AuthController {
   async me(
     @Req() req: RequestWithPayloadInterface,
   ): Promise<ResponseInterface<SafeUserResponse>> {
-    const user = await this.userService.findOneById(req.user.id);
+    const safeUser = await this.userService.findOneSafeById(req.user.id);
 
     if (
-      user.status === StatusEnum.NOT_CONFIRMED ||
-      user.status === StatusEnum.NOT_EMPLOYED
+      safeUser.status === StatusEnum.NOT_CONFIRMED ||
+      safeUser.status === StatusEnum.NOT_EMPLOYED
     )
       throw new CustomException("Forbidden", HttpStatus.FORBIDDEN, "AC-m-1");
-    return { data: { user }, message: "Utilisateur courant" };
+    return { data: { safeUser }, message: "Utilisateur courant" };
   }
 
   @Post("signin")
@@ -77,9 +77,6 @@ export class AuthController {
     //changement de isConnected
     user = await this.userService.update(user.id, { isConnected: true });
 
-    // remove "password" | "createdAt" | "updatedAt" from user before send it to front
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, createdAt, updatedAt, ...userSigninResponse } = user;
 
     const sessionId = uuidv4();
 
@@ -89,7 +86,7 @@ export class AuthController {
       sessionId,
     );
 
-    // add access token in cookies
+    // add refresh token in cookies
     this.tokenService.addRefreshTokenInResponseAsCookie(response, refreshToken);
 
     // hash refreshToken
@@ -107,7 +104,7 @@ export class AuthController {
     );
 
     return {
-      data: { accessToken, userSigninResponse },
+      data: { accessToken },
       message: "Connexion réussie.",
     };
   }
