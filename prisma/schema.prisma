@@ -34,9 +34,9 @@ model User {
   messages             Message[]
   readMessages         ReadMessages[]
   readAlerts           ReadAlerts[]
-  assignedTrains       AssignedTrain[]
   assignedLines        AssignedLine[]
   tokens               Token[]
+  trainTravel          TrainTravel[] 
 }
 
 enum RoleEnum {
@@ -150,8 +150,7 @@ model Line {
   updatedAt     DateTime       @updatedAt
   lineAlerts    LineAlert[]
   assignedlines AssignedLine[]
-  trains        Train[]
-  travel        Travel?
+  travels        Travel[]
 }
 
 model AssignedLine {
@@ -180,40 +179,29 @@ model Train {
   name           String          @unique @db.VarChar(45)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
-  lineId         Int?            @db.UnsignedInt()
-  line           Line?           @relation(fields: [lineId], references: [id])
-  assignedTrains AssignedTrain[]
   trainTravel    TrainTravel[]
 }
 
-model AssignedTrain {
-  trainId             Int       @db.UnsignedInt()
-  train               Train     @relation(fields: [trainId], references: [id])
-  userId              String
-  user                User      @relation(fields: [userId], references: [id])
-  assignmentStartDate DateTime
-  assignmentEndDate   DateTime?
-  createdAt           DateTime  @default(now())
 
-  @@id([trainId, userId])
-}
 
 model Travel {
   id           Int           @id @default(autoincrement()) @db.UnsignedInt()
   stationOne   String        @db.VarChar(100)
   stationTwo   String        @db.VarChar(100)
   duration     Int           @db.UnsignedInt()
-  lineId       Int           @unique @db.UnsignedInt()
+  lineId       Int           @db.UnsignedInt()
   line         Line          @relation(fields: [lineId], references: [id])
   trainTravels TrainTravel[]
+
 }
 
 model TrainTravel {
-  trainId   Int       @db.UnsignedInt()
-  train     Train     @relation(fields: [trainId], references: [id])
-  travelId  Int       @db.UnsignedInt()
-  travel    Travel    @relation(fields: [travelId], references: [id])
-  startTime DateTime?
-
-  @@id([trainId, travelId])
+  id        Int      @id @default(autoincrement())
+  trainId   Int      @db.UnsignedInt()
+  train     Train    @relation(fields: [trainId], references: [id])
+  travelId  Int      @db.UnsignedInt()
+  travel    Travel   @relation(fields: [travelId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  startTime DateTime
 }
