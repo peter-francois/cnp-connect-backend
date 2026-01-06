@@ -1,14 +1,23 @@
 import { UseGuards } from "@nestjs/common";
 import {
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
 
-@UseGuards(AccesTokenGuard)
+interface Message {
+  id: string;
+  conversationId: string;
+  content: string;
+  senderId: string;
+  timestamp?: string;
+}
 @WebSocketGateway()
 export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
@@ -17,6 +26,7 @@ export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
 
   private userCounter = 0;
 
+  @UseGuards(AccesTokenGuard)
   handleConnection(client: Socket): void {
     try {
       this.userCounter++;
@@ -60,6 +70,40 @@ export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
       }
     } catch (error) {
       console.error(`Error handling disconnect: ${error.message}`, error.stack);
+    }
+  }
+
+  @SubscribeMessage("message")
+  handleMessage(
+    @MessageBody() data: Message,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    try {
+      const username = this.connectedUsers.get(client.id);
+      if (!username) {
+        console.warn(
+          `Message received from unauthenticated socket: ${client.id}`,
+        );
+        // this.sendError(client, "Not authenticated");
+        return;
+      }
+
+      console.log(`Message from ${username}: ${data.content}`);
+
+      // Create server message with timestamp in ISO 8601 format
+      const serverMessage: Message = {
+        id: data.id,
+        conversationId: data.conversationId,
+        content: data.content,
+        senderId: data.senderId,
+        timestamp: data.timestamp,
+      };
+
+      // Broadcast to ALL clients including sender
+      this.server.emit("message", serverMessage);
+    } catch (error) {
+      console.error(`Error handling message: ${error.message}`, error.stack);
+      // this.sendError(client, "Failed to send message");
     }
   }
 }
