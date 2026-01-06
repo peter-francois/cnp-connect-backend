@@ -4,6 +4,7 @@ import { UserModule } from "./user/user.module";
 import { AuthModule } from "./auth/auth.module";
 import { EmailModule } from "./utils/mail/email.module";
 import { TokenService } from "./auth/token.service";
+import { AlertModule } from "./alert/alert.module";
 import { ConfigModule } from "@nestjs/config";
 import { ChatMessagingModule } from "./chat/chat-messaging.module";
 
@@ -15,6 +16,7 @@ import { ChatMessagingModule } from "./chat/chat-messaging.module";
     EmailModule,
     ConfigModule.forRoot(),
     ChatMessagingModule,
+    AlertModule
   ],
   // @dev ne devrais pas avoir de TokenService
   providers: [TokenService],
