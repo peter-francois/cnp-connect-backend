@@ -204,4 +204,5 @@ model TrainTravel {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   startTime DateTime
+  endTime   DateTime?
 }
