@@ -9,19 +9,22 @@ async function resetIfNeeded() {
   const assignedLine = await prisma.assignedLine.count();
   const countUsers = await prisma.user.count();
   const countTravels = await prisma.travel.count();
+  const countTrainTravels = await prisma.trainTravel.count()
 
   if (
     countLines > 0 ||
     countTrains > 0 ||
     countUsers ||
     assignedLine ||
-    countTravels > 0
+    countTravels > 0 ||
+    countTrainTravels > 0
   ) {
     await prisma.$executeRawUnsafe(`SET FOREIGN_KEY_CHECKS = 0;`);
     await prisma.$executeRawUnsafe(`TRUNCATE TABLE Train;`);
     await prisma.$executeRawUnsafe(`TRUNCATE TABLE Line;`);
     await prisma.$executeRawUnsafe(`TRUNCATE TABLE User;`);
     await prisma.$executeRawUnsafe(`TRUNCATE TABLE Travel;`);
+    await prisma.$executeRawUnsafe(`TRUNCATE TABLE TrainTravel;`);
     await prisma.$executeRawUnsafe(`TRUNCATE TABLE AssignedLine;`);
     await prisma.$executeRawUnsafe(`SET FOREIGN_KEY_CHECKS = 1;`);
   }
@@ -267,7 +270,7 @@ async function main() {
 
   const now = new Date();
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < drivers.length; i++) {
     // -------- ALLER --------
     const travelAller = travels[Math.floor(Math.random() * travels.length)];
     const driver = drivers[Math.floor(Math.random() * drivers.length)];
