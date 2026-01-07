@@ -70,7 +70,7 @@ export class AuthController {
     if (!comparePassword)
       throw new CustomException(
         "Bad credentials",
-        HttpStatus.PRECONDITION_FAILED,
+        HttpStatus.BAD_REQUEST,
         "AC-s-1",
       );
 

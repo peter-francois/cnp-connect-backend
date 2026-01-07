@@ -8,7 +8,7 @@ const omit = { password: true, createdAt: true, updatedAt: true };
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const userWithAssignedLineAndTrain = Prisma.validator<Prisma.UserDefaultArgs>()(
   {
-    include: { assignedLines: true, assignedTrains: true },
+    include: { assignedLines: true, trainTravel: true },
     omit,
   },
 );
@@ -47,7 +47,7 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
       assignedLines: {
         include: { line: true },
       },
-      assignedTrains: {
+      trainTravel: {
         include: { train: true },
       },
     };
@@ -62,7 +62,7 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
       assignedLines: {
         include: { line: true },
       },
-      assignedTrains: {
+      trainTravel: {
         include: { train: true },
       },
     };
