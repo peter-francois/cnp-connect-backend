@@ -11,7 +11,7 @@ import {
 import { Server, Socket } from "socket.io";
 import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
 import { UserService } from "src/user/user.service";
-import {
+import type {
   WelcomeUserMessage,
   ServerChatMessage,
 } from "../message/dto/websocket-message.dto";
@@ -55,8 +55,7 @@ export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
       };
       client.emit("welcome", welcomeMessage);
 
-      // Broadcast user joined notification to all OTHER clients
-      // const joinedMessage: any = {
+      // const joinedMessage: UserJoinedMessage = {
       //   type: "user_joined",
       //   username,
       // };
@@ -75,8 +74,7 @@ export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
         this.connectedUsers.delete(client.id);
         console.log(`User disconnected: ${username} (socket: ${client.id})`);
 
-        // Broadcast user left notification to remaining clients
-        // const leftMessage: any = {
+        // const leftMessage: UserLeftMessage = {
         //   type: "user_left",
         //   username,
         // };
@@ -114,45 +112,6 @@ export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
         timestamp: data.createdAt,
       };
 
-      // Broadcast to ALL clients including sender
-      client.broadcast.emit("message", serverMessage);
-
-      // Save message in db
-      this.messageService.send({ ...data, conversationId });
-    } catch (error) {
-      console.error(`Error handling message: ${error.message}`, error.stack);
-      // this.sendError(client, "Failed to send message");
-    }
-  }
-
-  @SubscribeMessage("message")
-  handleJoinMessage(
-    @MessageBody() data: Message,
-    @ConnectedSocket() client: Socket,
-  ): void {
-    const conversationId = "gvuhbijnok";
-    try {
-      const username = this.connectedUsers.get(client.id);
-      if (!username) {
-        console.warn(
-          `Message received from unauthenticated socket: ${client.id}`,
-        );
-        // this.sendError(client, "Not authenticated");
-        return;
-      }
-
-      console.log(`Message from ${username}: ${data.content}`);
-
-      // Create server message with timestamp in ISO 8601 format
-      const serverMessage: ServerChatMessage = {
-        messageId: data.messageId,
-        type: "message",
-        senderId: data.senderId,
-        content: data.content,
-        timestamp: data.createdAt,
-      };
-
-      // Broadcast to ALL clients including sender
       client.broadcast.emit("message", serverMessage);
 
       // Save message in db
