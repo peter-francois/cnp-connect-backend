@@ -77,17 +77,18 @@ export class AuthController {
     //changement de isConnected
     user = await this.userService.update(user.id, { isConnected: true });
 
-
     const sessionId = uuidv4();
 
     // create accessToken and refreshToken
-    const { accessToken, refreshToken } = await this.tokenService.createTokens(
-      user.id,
-      sessionId,
-    );
+    const { accessToken, refreshToken, webSocketToken } =
+      await this.tokenService.createTokens(user.id, sessionId);
 
     // add refresh token in cookies
-    this.tokenService.addRefreshTokenInResponseAsCookie(response, refreshToken);
+    this.tokenService.addRefreshAndWebsocketTokenInResponseAsCookie(
+      response,
+      refreshToken,
+      webSocketToken,
+    );
 
     // hash refreshToken
     const hashedRefreshToken = await this.authService.hash(refreshToken);
@@ -143,13 +144,15 @@ export class AuthController {
       );
 
     // create accessToken and refreshToken
-    const { accessToken, refreshToken } = await this.tokenService.createTokens(
-      req.user.id,
-      req.user.sessionId,
-    );
+    const { accessToken, refreshToken, webSocketToken } =
+      await this.tokenService.createTokens(req.user.id, req.user.sessionId);
 
     // add access token in cookies
-    this.tokenService.addRefreshTokenInResponseAsCookie(response, refreshToken);
+    this.tokenService.addRefreshAndWebsocketTokenInResponseAsCookie(
+      response,
+      refreshToken,
+      webSocketToken,
+    );
 
     const hahedRefreshToken = await this.authService.hash(refreshToken);
 

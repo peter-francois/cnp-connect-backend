@@ -6,7 +6,10 @@ import {
   PayloadInterface,
   PayloadWithSessionIdInterface,
 } from "./interfaces/payload.interface";
-import { TokensInterface } from "./interfaces/token.interface";
+import {
+  TokenInCookieInterface,
+  TokensInterface,
+} from "./interfaces/token.interface";
 import { Request, Response } from "express";
 import { CustomException } from "../utils/custom-exception";
 import { v4 as uuidv4 } from "uuid";
@@ -80,7 +83,16 @@ export class TokenService {
       },
     );
 
-    return { accessToken, refreshToken };
+    const webSocketToken: string = await this.generateJwt(
+      { id, sessionId },
+      {
+        algorithm: "HS256",
+        expiresIn: "15m",
+        secret: process.env.WEBSOCKET_JWT_SECRET,
+      },
+    );
+
+    return { accessToken, refreshToken, webSocketToken };
   }
 
   async delete(token: string): Promise<void> {
@@ -98,8 +110,11 @@ export class TokenService {
     return type === process.env.TOKEN_TYPE ? token : undefined;
   }
 
-  extractTokenCookie(request: Request): string {
-    const tokenFromCookie: string = request.cookies["refreshToken"];
+  extractTokenCookie(
+    request: Request,
+    type: keyof TokenInCookieInterface,
+  ): string {
+    const tokenFromCookie: string = request.cookies[type];
     return tokenFromCookie;
   }
 
@@ -133,9 +148,10 @@ export class TokenService {
     return tokenObject.userId;
   }
 
-  addRefreshTokenInResponseAsCookie(
+  addRefreshAndWebsocketTokenInResponseAsCookie(
     response: Response,
     refreshToken: string,
+    webSocketToken: string,
   ): void {
     response.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -143,6 +159,13 @@ export class TokenService {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/api/auth",
+    });
+    response.cookie("webSocketToken", webSocketToken, {
+      httpOnly: true,
+      maxAge: 15 * 60 * 1000,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      // path: "/api/auth",
     });
   }
 
@@ -153,6 +176,13 @@ export class TokenService {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/api/auth",
+    });
+    response.cookie("webSocketToken", "", {
+      httpOnly: true,
+      expires: new Date(0),
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      // path: "/api/auth",
     });
   }
 }

@@ -10,6 +10,7 @@ import {
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
+import { UserService } from "src/user/user.service";
 
 interface Message {
   id: string;
@@ -20,6 +21,8 @@ interface Message {
 }
 @WebSocketGateway()
 export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
+  constructor(private userService: UserService) {}
+
   @WebSocketServer()
   private server: Server;
   private readonly connectedUsers = new Map<string, string>();
@@ -27,10 +30,11 @@ export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
   private userCounter = 0;
 
   @UseGuards(AccesTokenGuard)
-  handleConnection(client: Socket): void {
+  async handleConnection(client: Socket): Promise<void> {
     try {
       this.userCounter++;
-      const username = `User${this.userCounter}`;
+      const user = await this.userService.findOneSafeById(client.data.userId);
+      const username = `${user.lastName} ${user.firstName}`;
       this.connectedUsers.set(client.id, username);
 
       console.log(`User connected: ${username} (socket: ${client.id})`);

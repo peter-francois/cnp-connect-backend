@@ -20,7 +20,7 @@ export class RefreshTokenGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
     const refreshToken: string | undefined =
-      this.tokenService.extractTokenCookie(request);
+      this.tokenService.extractTokenCookie(request, "refreshToken");
 
     if (!refreshToken) {
       throw new CustomException(
