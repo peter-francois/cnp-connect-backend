@@ -34,9 +34,10 @@ export interface WelcomeResponseMessage {
  * Message broadcast by server containing chat text with timestamp.
  */
 export interface ServerChatMessage {
+  messageId: string;
   type: "message";
-  username: string;
-  text: string;
+  senderId: string;
+  content: string;
   timestamp: string;
 }
 

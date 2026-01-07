@@ -11,17 +11,26 @@ import {
 import { Server, Socket } from "socket.io";
 import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
 import { UserService } from "src/user/user.service";
+import {
+  ServerChatMessage,
+  WelcomeUserMessage,
+} from "../dto/websocket-message.dto";
+import { Message } from "../entities/message.entity";
+import { MessageService } from "../message.service";
 
-interface Message {
-  id: string;
-  conversationId: string;
-  content: string;
-  senderId: string;
-  timestamp?: string;
-}
+// interface Message {
+//   id: string;
+//   conversationId: string;
+//   content: string;
+//   senderId: string;
+//   timestamp?: string;
+// }
 @WebSocketGateway()
 export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private messageService: MessageService,
+  ) {}
 
   @WebSocketServer()
   private server: Server;
@@ -40,17 +49,18 @@ export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
       console.log(`User connected: ${username} (socket: ${client.id})`);
 
       // Send welcome message to the new client
-      const welcomeMessage: any = {
+      const welcomeMessage: WelcomeUserMessage = {
+        type: "welcome_user",
         username,
       };
       client.emit("welcome", welcomeMessage);
 
       // Broadcast user joined notification to all OTHER clients
-      const joinedMessage: any = {
-        type: "user_joined",
-        username,
-      };
-      client.broadcast.emit("user_joined", joinedMessage);
+      // const joinedMessage: any = {
+      //   type: "user_joined",
+      //   username,
+      // };
+      // client.broadcast.emit("user_joined", joinedMessage);
     } catch (error) {
       console.error(`Error handling connection: ${error.message}`, error.stack);
       client.disconnect(true);
@@ -66,11 +76,11 @@ export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
         console.log(`User disconnected: ${username} (socket: ${client.id})`);
 
         // Broadcast user left notification to remaining clients
-        const leftMessage: any = {
-          type: "user_left",
-          username,
-        };
-        this.server.emit("user_left", leftMessage);
+        // const leftMessage: any = {
+        //   type: "user_left",
+        //   username,
+        // };
+        // this.server.emit("user_left", leftMessage);
       }
     } catch (error) {
       console.error(`Error handling disconnect: ${error.message}`, error.stack);
@@ -82,6 +92,7 @@ export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: Message,
     @ConnectedSocket() client: Socket,
   ): void {
+    const conversationId = "gvuhbijnok";
     try {
       const username = this.connectedUsers.get(client.id);
       if (!username) {
@@ -95,16 +106,19 @@ export class ChatGatewayV2 implements OnGatewayConnection, OnGatewayDisconnect {
       console.log(`Message from ${username}: ${data.content}`);
 
       // Create server message with timestamp in ISO 8601 format
-      const serverMessage: Message = {
-        id: data.id,
-        conversationId: data.conversationId,
-        content: data.content,
+      const serverMessage: ServerChatMessage = {
+        messageId: data.messageId,
+        type: "message",
         senderId: data.senderId,
-        timestamp: data.timestamp,
+        content: data.content,
+        timestamp: data.createdAt,
       };
 
       // Broadcast to ALL clients including sender
       this.server.emit("message", serverMessage);
+
+      // Save message in db
+      this.messageService.send({ ...data, conversationId });
     } catch (error) {
       console.error(`Error handling message: ${error.message}`, error.stack);
       // this.sendError(client, "Failed to send message");
