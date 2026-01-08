@@ -66,7 +66,7 @@ export class TokenService {
       { id },
       {
         algorithm: "HS256",
-        expiresIn: "15m",
+        expiresIn: "1s",
         secret: process.env.ACCESS_JWT_SECRET,
       },
     );
@@ -142,7 +142,7 @@ export class TokenService {
       maxAge: 24 * 3600 * 1000,
       sameSite: "lax",
       secure: false,
-      path: "/api/auth",
+      path: process.env.NODE_ENV === "development" ? "/api/auth" : "/auth",
     });
   }
 
@@ -152,7 +152,7 @@ export class TokenService {
       expires: new Date(0),
       sameSite: "lax",
       secure: false,
-      path: "/api/auth",
+      path: process.env.NODE_ENV === "development" ? "/api/auth" : "/auth",
     });
   }
 }
