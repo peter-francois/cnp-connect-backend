@@ -4,9 +4,11 @@ import { ValidationPipe, Logger } from "@nestjs/common";
 import { PrismaExeptionFilter } from "./utils/filters/prisma-exeption.filter";
 import { CustomExceptionFilter } from "./utils/filters/custom-exception.filter";
 import cookieParser from "cookie-parser";
+import { NestExpressApplication } from "@nestjs/platform-express";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.set("trust proxy", 1);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -16,12 +18,12 @@ async function bootstrap() {
   );
   const logger = new Logger("Test");
   logger.warn("process.env.FRONTEND_URL = " + process.env.FRONTEND_URL);
-
   app.enableCors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   });
+  app.setGlobalPrefix(process.env.NODE_ENV === "development" ? "api" : "");
   app.use(cookieParser());
   app.useGlobalFilters(new PrismaExeptionFilter(), new CustomExceptionFilter());
   await app.listen(process.env.PORT ?? 3000);
