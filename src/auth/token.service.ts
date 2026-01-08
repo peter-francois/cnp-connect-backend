@@ -141,7 +141,7 @@ export class TokenService {
       httpOnly: true,
       maxAge: 24 * 3600 * 1000,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       path: "/api/auth",
     });
   }
@@ -151,7 +151,7 @@ export class TokenService {
       httpOnly: true,
       expires: new Date(0),
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       path: "/api/auth",
     });
   }
