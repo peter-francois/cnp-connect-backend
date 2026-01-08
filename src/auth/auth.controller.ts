@@ -70,16 +70,12 @@ export class AuthController {
     if (!comparePassword)
       throw new CustomException(
         "Bad credentials",
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.UNAUTHORIZED,
         "AC-s-1",
       );
 
     //changement de isConnected
     user = await this.userService.update(user.id, { isConnected: true });
-
-    // remove "password" | "createdAt" | "updatedAt" from user before send it to front
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, createdAt, updatedAt, ...userSigninResponse } = user;
 
     const sessionId = uuidv4();
 
@@ -107,7 +103,7 @@ export class AuthController {
     );
 
     return {
-      data: { accessToken, userSigninResponse },
+      data: { accessToken },
       message: "Connexion réussie.",
     };
   }
