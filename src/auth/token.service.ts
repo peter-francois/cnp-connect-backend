@@ -94,7 +94,19 @@ export class TokenService {
   }
 
   extractTokenFromHeader(request: Request): string | undefined {
+    console.log(
+      "🚀 ~ token.service.ts:97 ~ extractTokenFromHeader ~ request:",
+      request,
+    );
     const [type, token] = request.headers.authorization?.split(" ") ?? [];
+    console.log(
+      "🚀 ~ token.service.ts:98 ~ extractTokenFromHeader ~ token:",
+      token,
+    );
+    console.log(
+      "🚀 ~ token.service.ts:98 ~ extractTokenFromHeader ~ type:",
+      type,
+    );
     return type === process.env.TOKEN_TYPE ? token : undefined;
   }
 
