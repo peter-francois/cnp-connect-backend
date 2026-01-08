@@ -18,7 +18,6 @@ async function bootstrap() {
   );
   const logger = new Logger("Test");
   logger.warn("process.env.FRONTEND_URL = " + process.env.FRONTEND_URL);
-  app.set("trust proxy", 1);
   app.enableCors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
