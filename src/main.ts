@@ -20,10 +20,11 @@ async function bootstrap() {
   logger.warn("process.env.FRONTEND_URL = " + process.env.FRONTEND_URL);
   app.enableCors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    // origin: "http://localhost:80",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   });
-  app.setGlobalPrefix(process.env.NODE_ENV === "development" ? "api" : "");
+  app.setGlobalPrefix("api");
   app.use(cookieParser());
   app.useGlobalFilters(new PrismaExeptionFilter(), new CustomExceptionFilter());
   await app.listen(process.env.PORT ?? 3000);
