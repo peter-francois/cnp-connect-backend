@@ -140,8 +140,8 @@ export class TokenService {
     response.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       maxAge: 24 * 3600 * 1000,
-      sameSite: "lax",
-      secure: false,
+      sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+      secure: process.env.NODE_ENV === "development" ? false : true,
       path: "/api/auth",
     });
   }
@@ -150,8 +150,8 @@ export class TokenService {
     response.cookie("refreshToken", "", {
       httpOnly: true,
       expires: new Date(0),
-      sameSite: "lax",
-      secure: false,
+      sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+      secure: process.env.NODE_ENV === "development" ? false : true,
       path: "/api/auth",
     });
   }
