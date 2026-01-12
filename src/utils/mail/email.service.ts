@@ -20,7 +20,7 @@ export class EmailService {
         subject: "Voici le lien pour réinitialiser votre mot de passe",
         html: `<h1>Bonjour ${user.firstName}</h1>
           <p>Email envoyé via Cnp-Connect 🚀</p>
-          <a href="http://localhost:5173/nouveau-mot-de-passe/${tokenUuid}">
+          <a href="${process.env.FRONTEND_URL}/nouveau-mot-de-passe/${tokenUuid}">
             Cliquez ici pour réinitialiser votre mot de passe
           </a>`,
       });
