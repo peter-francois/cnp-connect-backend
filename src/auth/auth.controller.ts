@@ -44,14 +44,14 @@ export class AuthController {
   async me(
     @Req() req: RequestWithPayloadInterface,
   ): Promise<ResponseInterface<SafeUserResponse>> {
-    const safeUser = await this.userService.findOneSafeById(req.user.id);
+    const user = await this.userService.findOneSafeById(req.user.id);
 
     if (
-      safeUser.status === StatusEnum.NOT_CONFIRMED ||
-      safeUser.status === StatusEnum.NOT_EMPLOYED
+      user.status === StatusEnum.NOT_CONFIRMED ||
+      user.status === StatusEnum.NOT_EMPLOYED
     )
       throw new CustomException("Forbidden", HttpStatus.FORBIDDEN, "AC-m-1");
-    return { data: { safeUser }, message: "Utilisateur courant" };
+    return { data: { safeUser: user }, message: "Utilisateur courant" };
   }
 
   @Post("signin")
