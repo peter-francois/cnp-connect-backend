@@ -51,7 +51,7 @@ export class AuthController {
       user.status === StatusEnum.NOT_EMPLOYED
     )
       throw new CustomException("Forbidden", HttpStatus.FORBIDDEN, "AC-m-1");
-    return { data: { safeUser: user }, message: "Utilisateur courant" };
+    return { data: { user }, message: "Utilisateur courant" };
   }
 
   @Post("signin")
