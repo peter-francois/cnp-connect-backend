@@ -13,6 +13,7 @@ import {
 import { Request, Response } from "express";
 import { CustomException } from "../utils/custom-exception";
 import { v4 as uuidv4 } from "uuid";
+import { isInDevMode } from "src/utils/variables";
 
 // add salt ?
 
@@ -156,8 +157,8 @@ export class TokenService {
     response.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       maxAge: 24 * 3600 * 1000,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      sameSite: isInDevMode ? "lax" : "none",
+      secure: isInDevMode ? false : true,
       path: "/api/auth",
     });
     response.cookie("webSocketToken", webSocketToken, {
@@ -173,8 +174,8 @@ export class TokenService {
     response.cookie("refreshToken", "", {
       httpOnly: true,
       expires: new Date(0),
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      sameSite: isInDevMode ? "lax" : "none",
+      secure: isInDevMode ? false : true,
       path: "/api/auth",
     });
     response.cookie("webSocketToken", "", {

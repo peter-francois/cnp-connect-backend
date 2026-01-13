@@ -70,7 +70,7 @@ export class AuthController {
     if (!comparePassword)
       throw new CustomException(
         "Bad credentials",
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.UNAUTHORIZED,
         "AC-s-1",
       );
 
@@ -211,9 +211,8 @@ export class AuthController {
   async signout(
     @Req() req: RequestWithPayloadSessionAndRefreshInterface,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<ResponseInterfaceMessage> {
+  ): Promise<void> {
     await this.authService.signout(req.user.id, req.user.sessionId);
     this.tokenService.removeRefreshTokenInResponseAsCookie(response);
-    return { message: "Déconnexion réussie." };
   }
 }
