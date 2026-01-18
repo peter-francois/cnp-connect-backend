@@ -1,9 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Prisma, StatusEnum, User } from "@prisma/client";
 import { UserRepositoryInterface } from "./interface/user.interface";
 import { PrismaService } from "../../prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
-
-const omit = { password: true, createdAt: true, updatedAt: true };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const userWithAssignedLineAndTrain = Prisma.validator<Prisma.UserDefaultArgs>()(
@@ -13,7 +12,7 @@ const userWithAssignedLineAndTrain = Prisma.validator<Prisma.UserDefaultArgs>()(
   },
 );
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const omit = { password: true, createdAt: true, updatedAt: true };
 const safeUser = Prisma.validator<Prisma.UserDefaultArgs>()({
   omit,
 });
@@ -27,6 +26,21 @@ type SafeUserResponseWithAssignedLineAndTrainPrisma = Prisma.UserGetPayload<
 @Injectable()
 export class DatabaseUserRepository implements UserRepositoryInterface {
   constructor(private readonly prisma: PrismaService) {}
+
+  async findOneWithAssignedLineAndTrainPrisma(
+    id: string,
+  ): Promise<SafeUserResponseWithAssignedLineAndTrainPrisma> {
+    const where: Prisma.UserWhereUniqueInput = { id };
+    const include = {
+      assignedLines: {
+        include: { line: true },
+      },
+      trainTravel: {
+        include: { train: true },
+      },
+    };
+    return await this.prisma.user.findUniqueOrThrow({ where, omit, include });
+  }
 
   async create(
     data: Prisma.UserCreateInput,
@@ -52,21 +66,6 @@ export class DatabaseUserRepository implements UserRepositoryInterface {
       },
     };
     return this.prisma.user.findMany({ orderBy, omit, include });
-  }
-
-  async findOneWithAssignedLineAndTrainPrisma(
-    id: string,
-  ): Promise<SafeUserResponseWithAssignedLineAndTrainPrisma> {
-    const where: Prisma.UserWhereUniqueInput = { id };
-    const include = {
-      assignedLines: {
-        include: { line: true },
-      },
-      trainTravel: {
-        include: { train: true },
-      },
-    };
-    return await this.prisma.user.findUniqueOrThrow({ where, omit, include });
   }
 
   async findOneById(id: string): Promise<SafeUserResponsePrisma> {

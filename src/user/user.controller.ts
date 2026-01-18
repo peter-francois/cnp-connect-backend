@@ -15,7 +15,7 @@ import { ResponseInterface } from "src/utils/interfaces/response.interface";
 import { AccesTokenGuard } from "src/auth/guard/access-token.guard";
 import { SupervisorGuard } from "src/auth/guard/supervisor.guard";
 import { CoordinatorGuard } from "src/auth/guard/coordinator.guard";
-import { SafeUserResponse } from "./interface/user.interface";
+import { SafeUserWithLineAndTrainTravelResponse } from "./interface/user.interface";
 import { UpdateUserDto } from "./dto/update-user.dto";
 
 @UseGuards(AccesTokenGuard)
@@ -23,16 +23,26 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Get(":id")
+  async findOne(
+    @Param("id") id: string,
+  ): Promise<ResponseInterface<SafeUserWithLineAndTrainTravelResponse>> {
+    const user: SafeUserWithLineAndTrainTravelResponse =
+      await this.userService.findOneWithLinesAndTrains(id);
+    return {
+      data: { user },
+      message: "Voici l'utilisateur demandé",
+    };
+  }
+
   // @UseGuards(SupervisorGuard)
   @Post()
   async create(
     @Body() createUserDto: CreateUserDto,
     status: StatusEnum = StatusEnum.NOT_CONFIRMED,
-  ): Promise<ResponseInterface<SafeUserResponse>> {
-    const user: SafeUserResponse = await this.userService.createUser(
-      createUserDto,
-      status,
-    );
+  ): Promise<ResponseInterface<SafeUserWithLineAndTrainTravelResponse>> {
+    const user: SafeUserWithLineAndTrainTravelResponse =
+      await this.userService.createUser(createUserDto, status);
     return {
       data: { user },
       message: "Un nouvel utilisation vient d'être créé",
@@ -42,8 +52,10 @@ export class UserController {
   // @UseGuards(CoordinatorGuard)
   @Get()
   // @dev put limit
-  async findAll(): Promise<ResponseInterface<SafeUserResponse[]>> {
-    const users: SafeUserResponse[] =
+  async findAll(): Promise<
+    ResponseInterface<SafeUserWithLineAndTrainTravelResponse[]>
+  > {
+    const users: SafeUserWithLineAndTrainTravelResponse[] =
       await this.userService.findManyWithLinesAndTrains();
     return {
       data: { users },
@@ -51,21 +63,13 @@ export class UserController {
     };
   }
 
-  // @dev refaire comme les autre pour avoir le meme type de retour
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.userService.findOneWithLinesAndTrains(id);
-  }
-
   @Patch(":id")
   async update(
     @Param("id") id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<ResponseInterface<SafeUserResponse>> {
-    const userUpdated: SafeUserResponse = await this.userService.update(
-      id,
-      updateUserDto,
-    );
+  ): Promise<ResponseInterface<SafeUserWithLineAndTrainTravelResponse>> {
+    const userUpdated: SafeUserWithLineAndTrainTravelResponse =
+      await this.userService.update(id, updateUserDto);
     return {
       data: { userUpdated },
       message: "Voici l'utilisateur mis à jour",

@@ -24,7 +24,7 @@ import {
 } from "./interfaces/payload.interface";
 import { RefreshTokenGuard } from "./guard/refresh-token.guard";
 import { EmailService } from "src/utils/mail/email.service";
-import { SafeUserResponse } from "src/user/interface/user.interface";
+import { SafeUserWithLineAndTrainTravelResponse } from "src/user/interface/user.interface";
 import { AccesTokenGuard } from "./guard/access-token.guard";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import type { Response } from "express";
@@ -43,7 +43,7 @@ export class AuthController {
   @Get("me")
   async me(
     @Req() req: RequestWithPayloadInterface,
-  ): Promise<ResponseInterface<SafeUserResponse>> {
+  ): Promise<ResponseInterface<SafeUserWithLineAndTrainTravelResponse>> {
     const user = await this.userService.findOneById(req.user.id);
 
     if (
@@ -58,7 +58,9 @@ export class AuthController {
   async signin(
     @Body() body: SigninDto,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<ResponseInterface<string | SafeUserResponse>> {
+  ): Promise<
+    ResponseInterface<string | SafeUserWithLineAndTrainTravelResponse>
+  > {
     let user: User = await this.userService.getUserByEmail(body.email);
 
     // compare hash

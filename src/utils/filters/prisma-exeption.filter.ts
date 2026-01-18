@@ -61,7 +61,6 @@ export class PrismaExeptionFilter implements ExceptionFilter {
       default:
         break;
     }
-
     response.status(statusCode).json(responseBody);
   }
 }

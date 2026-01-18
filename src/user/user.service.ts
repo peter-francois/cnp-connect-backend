@@ -4,7 +4,7 @@ import { StatusEnum, User } from "@prisma/client";
 import { DatabaseUserRepository } from "./user.repository";
 import { AuthService } from "./../auth/auth.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { SafeUserResponse } from "./interface/user.interface";
+import { SafeUserWithLineAndTrainTravelResponse } from "./interface/user.interface";
 
 @Injectable()
 export class UserService {
@@ -16,21 +16,27 @@ export class UserService {
   async createUser(
     data: CreateUserDto,
     status: StatusEnum,
-  ): Promise<SafeUserResponse> {
+  ): Promise<SafeUserWithLineAndTrainTravelResponse> {
     // hash password
     data.password = await this.authService.hash(data.password);
     return this.userRepository.create(data, status);
   }
 
-  async findManyWithLinesAndTrains(): Promise<SafeUserResponse[]> {
+  async findManyWithLinesAndTrains(): Promise<
+    SafeUserWithLineAndTrainTravelResponse[]
+  > {
     return await this.userRepository.findMany();
   }
 
-  async findOneWithLinesAndTrains(id: string): Promise<SafeUserResponse> {
+  async findOneWithLinesAndTrains(
+    id: string,
+  ): Promise<SafeUserWithLineAndTrainTravelResponse> {
     return await this.userRepository.findOneWithAssignedLineAndTrainPrisma(id);
   }
 
-  async findOneById(id: string): Promise<SafeUserResponse> {
+  async findOneById(
+    id: string,
+  ): Promise<SafeUserWithLineAndTrainTravelResponse> {
     return await this.userRepository.findOneById(id);
   }
 
