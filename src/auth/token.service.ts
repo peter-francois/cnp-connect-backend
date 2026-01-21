@@ -10,7 +10,7 @@ import { TokensInterface } from "./interfaces/token.interface";
 import { Request, Response } from "express";
 import { CustomException } from "../utils/custom-exception";
 import { v4 as uuidv4 } from "uuid";
-import { isInDevMode } from "src/utils/variables";
+import { isInDevMode } from "../utils/variables";
 
 // add salt ?
 
