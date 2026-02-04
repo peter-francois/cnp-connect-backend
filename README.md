@@ -195,7 +195,7 @@ npm run test:watch
 
 ---
 
-📬 Contact
+## 📬 Contact
 
 Si vous avez des questions, des suggestions ou souhaitez échanger sur le projet, vous pouvez me contacter :
 
