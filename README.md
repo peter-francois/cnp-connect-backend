@@ -1,4 +1,4 @@
-# CNP-Connect Backend
+# CNP-Connect, backend du projet
 
 ## 📌 Présentation du projet
 
