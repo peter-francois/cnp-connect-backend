@@ -1,11 +1,10 @@
-# CNP-Connect – Frontend
+# CNP-Connect – Backend
 
 ## 📌 Project Overview
 
 CNP-Connect is an internal web application designed for public transportation companies.  
-This repository contains the **frontend** of the application.  
 
-The user interface is built with **React** and **TypeScript**, powered by **Vite** for development and build, and styled with **Tailwind CSS**.
+This repository contains the **backend** of the application, developed with **NestJS** and **TypeScript**, using **Prisma** as the ORM for the relational database.
 
 ---
 
@@ -21,147 +20,193 @@ This repository is a **mirror of the original GitLab repository** for the CNP-Co
 
 ### 🐳 Containerization
 
-A **Dockerfile** is present to containerize the frontend application.
-
-### ⚙️ Nginx (Lightweight Image)
-
-An **Nginx configuration** is provided and designed to work with the Dockerfile.  
-It serves the frontend build via a minimal Nginx server to ensure a lighter and more performant Docker image.
+Dockerfiles are provided to containerize the backend, allowing reproducible execution in both local and production environments.
 
 ### 🔃 CI/CD (GitLab)
 
-The project integrates a **GitLab CI/CD pipeline** (`.gitlab-ci.yml`) that automatically builds the application and deploys it to a GitLab container registry.
+The project integrates a **GitLab CI/CD pipeline** (`.gitlab-ci.yml`) enabling:
+
+- automatic application build,
+- Docker image creation,
+- automated testing of the generated image,
+- pushing the image to the GitLab container registry.
 
 ---
 
-## 🏗️ Frontend Architecture
+## 🏗️ Backend Architecture
 
-The application follows a modular architecture based on:
+The backend follows a **modular NestJS architecture**, organized by business domain.
 
-- **Pages** (`/pages`): main views of the application  
-- **Components** (`/components`): reusable UI elements (e.g., `PrimaryButton`, `PopUp`)  
-- **Layouts** (`/layouts`): common structures for groups of pages (e.g., `DisconnectedLayout`)  
-- **Router**: centralized navigation management via React Router  
-- **Services & Hooks**: isolation of business logic and API calls (e.g., `useUserService`)  
-- **Guards**: route protection based on authentication and roles  
+Each module generally contains:
+
+- **Controller** → exposes HTTP endpoints  
+- **Service** → contains business logic  
+- **Repository / Prisma** → data access layer  
+- **DTO** → validation and typing of incoming data  
+
+### Main Modules
+
+- **Auth** → authentication, token management, guards  
+- **Users** → user and role management  
+- **Alerts** → alert management  
+- **Assignments** → assignment management  
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Tool                      | Usage                  |
-| ------------------------- | ---------------------- |
-| **React**                 | User Interface         |
-| **TypeScript**            | Static Typing          |
-| **Vite**                  | Build & Dev Server     |
-| **Tailwind CSS**          | Styling                |
-| **Axios**                 | HTTP Client            |
-| **TanStack Query**        | Cache & Data Fetching  |
-| **React Hook Form + Zod** | Form Validation        |
+| Tool            | Usage                     |
+| --------------- | ------------------------- |
+| **NestJS**       | Backend framework         |
+| **TypeScript**   | Static typing             |
+| **Prisma**       | ORM                       |
+| **MySQL**        | Relational database       |
+| **JWT**          | Authentication            |
+| **class-validator** | DTO validation        |
+| **Docker**       | Containerization          |
 
 ---
 
-## 🔐 Frontend Security
+## 🔐 Backend Security
 
-### Authentication & Tokens
+### Environment Variables
 
-- **Access Token**: stored in `localStorage` and automatically sent via Axios  
-- **Refresh Token**: stored in a secure `httpOnly` cookie  
-- HTTPS is required in production  
+Sensitive variables are stored in a `.env` file (excluded from version control).
 
-### Form Validation
+### CORS
 
-All forms use **React Hook Form + Zod** to validate data before sending it to the backend.
+CORS is configured to restrict which origins are allowed to call the API from a browser.
 
-### Route Guards
+### Error Handling
 
-Guards prevent access to certain pages based on:
-
-- authentication status  
-- user role (e.g., pages reserved for **Supervisors**)  
+- Use of custom HTTP exceptions  
+- Global filter for Prisma errors to improve debugging  
+- Detailed error messages in development, masked in production  
 
 ---
 
-## 🌐 Data Access (API)
+## 🔑 Authentication (JWT)
 
-A centralized Axios client (`axiosClient`):
+Authentication is based on **JSON Web Tokens (JWT)**.
 
-- automatically attaches the authentication token  
-- manages token refresh  
-- interprets HTTP status codes and redirects when necessary  
+### Access Token
+
+- Short lifespan  
+- Verified on each request via an Auth Guard  
+- Contains only the user identifier (minimum claims principle)  
+
+### Refresh Token
+
+- Stored client-side in an `httpOnly` cookie  
+- Stored in the database and linked to a session to support multi-device usage  
+- Allows generating new tokens without requiring the user to log in again  
+
+### TokenService
+
+A dedicated service manages:
+
+- token creation,  
+- token validation,  
+- extraction from headers and cookies.  
+
+---
+
+## 🌐 API Endpoints (General Principles)
+
+The API follows REST conventions:
+
+- `POST /auth/login` → authentication  
+- `GET /users` → list of users  
+- `GET /users/:id` → user details  
+- `POST /alerts` → create an alert  
+- `PATCH /assignments` → reassign an assignment  
 
 ---
 
 ## 📁 Project Structure (Simplified)
 ```
 src/
-│── components/
-│ ├── ui/ # Generic UI components (PrimaryButton, etc.)
-│ └── features/ # Business-related components (User, Header, etc.)
+│── app.module.ts
 │
-│── pages/ # Application pages
+│── auth/
+│ ├── auth.controller.ts
+│ ├── auth.service.ts
+│ ├── auth.guard.ts
+│ └── token.service.ts
 │
-│── layouts/ # Layouts (e.g., DisconnectedLayout)
+│── user/
+│ ├── user.controller.ts
+│ ├── user.service.ts
+│ ├── user.repository.ts
+│ └── dto/
 │
-│── router/ # Route configuration
-│
-│── api/ # API calls
-│
-│── hooks/ # Custom hooks (e.g., useUserService)
-│
-│── guards/ # Route protection
+│── alert/
+│ ├── alert.controller.ts
+│ ├── alert.service.ts
 │
 │── utils/
-│ └── axiosClient.ts
+│ ├── exceptions/
+│ └── filters/
+│
+│── main.ts
 ```
 
 ---
 
 ## ⚙️ Configuration
 
-An `.env.example` file is provided at the root of the project. It lists all required environment variables.
+Make sure you have:
+
+- Node.js installed  
+- MySQL running locally or via Docker  
+
+An `.env.example` file is provided as a configuration template.
 
 To use it:
 
-```bash
+``` bash
 cp .env.example .env
 ```
-
 Then fill in the values according to your environment.
 
 ---
 
 ## 🚀 Run the project locally
-
+Install dependencies:
 ``` bash
 npm install
-npm run dev
 ```
 
-Then open: http://localhost:5173
+Generate Prisma client:
+``` bash
+npx prisma generate
+```
+
+Run the backend:
+``` bash
+npm run start:dev
+```
+By default: http://localhost:3000
 
 ---
 
-## 🧪 E2E Tests (Cypress)
+## 🧪 Tests (Jest)
+The project includes automated unit tests with Jest.
 
-The project includes End-to-End tests using Cypress.  
-Tests are located in the `cypress/` folder.  
-
-To run them:
+Commands:
 ``` bash
-npm run cy:open
+npm run test
+npm run test:watch
 ```
 
 ---
 
 ## 📬 Contact
-
 If you have any questions, suggestions, or would like to discuss the project, feel free to contact me:
 
-Email: contact@peterfrancois.dev
-
-LinkedIn: https://www.linkedin.com/in/peterfrancois/
-
-GitHub: https://github.com/peter-francois/
+Email: contact@peterfrancois.dev  
+LinkedIn: https://www.linkedin.com/in/peterfrancois/  
+GitHub: https://github.com/peter-francois/  
 
 Feel free to open an issue or submit a pull request if you’d like to contribute to the project.
+
