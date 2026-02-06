@@ -1,213 +1,167 @@
-# CNP-Connect, backend du projet
+# CNP-Connect – Frontend
 
-## 📌 Présentation du projet
+## 📌 Project Overview
 
-CNP-Connect est une application web interne destinée aux entreprises de transport en commun.  
-Ce dépôt contient le **backend** de l’application, développé avec **NestJS et TypeScript**, utilisant **Prisma** comme ORM pour la base de données relationnelle.
+CNP-Connect is an internal web application designed for public transportation companies.  
+This repository contains the **frontend** of the application.  
 
----
-
-## 📦 Dépôt parent
-Ce projet fait partie de : https://github.com/peter-francois/cnp-connect-resources
+The user interface is built with **React** and **TypeScript**, powered by **Vite** for development and build, and styled with **Tailwind CSS**.
 
 ---
 
-## 🔁 Origine du dépôt & DevOps
+## 📦 Parent Repository
 
-Ce dépôt est un **miroir du dépôt GitLab d’origine** du projet CNP-Connect. Il reflète donc l’état du code développé initialement sur GitLab.
+This project is part of: https://github.com/peter-francois/cnp-connect-resources
 
-### 🐳 Conteneurisation
+---
 
-Des **Dockerfiles** sont présents pour conteneuriser le backend et permettre une exécution reproductible en environnement local et de production.
+## 🔁 Repository Origin & DevOps
+
+This repository is a **mirror of the original GitLab repository** for the CNP-Connect project. It therefore reflects the state of the code originally developed on GitLab.
+
+### 🐳 Containerization
+
+A **Dockerfile** is present to containerize the frontend application.
+
+### ⚙️ Nginx (Lightweight Image)
+
+An **Nginx configuration** is provided and designed to work with the Dockerfile.  
+It serves the frontend build via a minimal Nginx server to ensure a lighter and more performant Docker image.
 
 ### 🔃 CI/CD (GitLab)
 
-Le projet intègre une **pipeline GitLab CI/CD (`.gitlab-ci.yml`)** permettant :
-- le build automatique de l’application,
-- la construction de l’image Docker,
-- le test automatique de l'image générée,
-- et le push dans le **container registry GitLab**.
+The project integrates a **GitLab CI/CD pipeline** (`.gitlab-ci.yml`) that automatically builds the application and deploys it to a GitLab container registry.
 
 ---
 
-## 🏗️ Architecture Backend
+## 🏗️ Frontend Architecture
 
-Le backend suit une **architecture modulaire NestJS**, organisée par domaine métier.
+The application follows a modular architecture based on:
 
-Chaque module contient généralement :
-- **Controller** → expose les endpoints HTTP
-- **Service** → contient la logique métier
-- **Repository / Prisma** → accès aux données
-- **DTO** → validation et typage des données entrantes
-
-Modules principaux :
-- **Auth** → authentification, gestion des tokens, guards  
-- **Users** → gestion des utilisateurs et rôles  
-- **Alerts** → gestion des alertes  
-- **Assignments** → gestion des affectations  
+- **Pages** (`/pages`): main views of the application  
+- **Components** (`/components`): reusable UI elements (e.g., `PrimaryButton`, `PopUp`)  
+- **Layouts** (`/layouts`): common structures for groups of pages (e.g., `DisconnectedLayout`)  
+- **Router**: centralized navigation management via React Router  
+- **Services & Hooks**: isolation of business logic and API calls (e.g., `useUserService`)  
+- **Guards**: route protection based on authentication and roles  
 
 ---
 
-## 🛠️ Stack technique
+## 🛠️ Tech Stack
 
-| Outil | Usage |
-|------|-------|
-| **NestJS** | Framework backend |
-| **TypeScript** | Typage statique |
-| **Prisma** | ORM |
-| **MySQL** | Base de données relationnelle |
-| **JWT** | Authentification |
-| **class-validator** | Validation des DTO |
-| **Docker** | Conteneurisation |
-
----
-
-## 🔐 Sécurité côté Backend
-
-### Variables d’environnement
-
-Les variables sensibles sont stockées dans un fichier `.env` (exclu du versioning).  
-
-
-### CORS
-
-Le backend configure les CORS afin de limiter les origines autorisées à appeler l’API depuis un navigateur.
-
-### Gestion des erreurs
-
-- Utilisation d’exceptions HTTP personnalisées.
-- Filtre global pour les erreurs Prisma afin d’améliorer le débogage.
-- Messages détaillés en développement, masqués en production.
+| Tool                      | Usage                  |
+| ------------------------- | ---------------------- |
+| **React**                 | User Interface         |
+| **TypeScript**            | Static Typing          |
+| **Vite**                  | Build & Dev Server     |
+| **Tailwind CSS**          | Styling                |
+| **Axios**                 | HTTP Client            |
+| **TanStack Query**        | Cache & Data Fetching  |
+| **React Hook Form + Zod** | Form Validation        |
 
 ---
 
-## 🔑 Authentification (JWT)
+## 🔐 Frontend Security
 
-L’authentification repose sur des JSON Web Token (JWT).
+### Authentication & Tokens
 
-### Access Token
+- **Access Token**: stored in `localStorage` and automatically sent via Axios  
+- **Refresh Token**: stored in a secure `httpOnly` cookie  
+- HTTPS is required in production  
 
-- Durée de vie courte
-- Vérifié à chaque requête via un Auth Guard
-- Contient uniquement l’identifiant (principe minimum claims)
+### Form Validation
 
-### Refresh Token
+All forms use **React Hook Form + Zod** to validate data before sending it to the backend.
 
-- Stocké côté client dans un cookie httpOnly
-- Stocké en base de données et associé à session pour permettre le multiplatforme
-- Permet de générer un nouveau couple de tokens sans reconnecter l’utilisateur
+### Route Guards
 
-### TokenService
+Guards prevent access to certain pages based on:
 
-Un service dédié gère :
-- la création des tokens,
-- leur validation,
-- leur extraction depuis headers / cookies.
+- authentication status  
+- user role (e.g., pages reserved for **Supervisors**)  
 
 ---
 
-## 🌐 Endpoints API (principe général)
+## 🌐 Data Access (API)
 
-L’API suit des conventions REST :
+A centralized Axios client (`axiosClient`):
 
-- `POST /auth/login` → authentification
-- `GET /users` → liste des utilisateurs
-- `GET /users/:id` → détail utilisateur
-- `POST /alerts` → création d’alerte
-- `PATCH /assignments` → réaffectation
+- automatically attaches the authentication token  
+- manages token refresh  
+- interprets HTTP status codes and redirects when necessary  
 
+---
 
-## 📁 Structure du projet (simplifiée)
+## 📁 Project Structure (Simplified)
 ```
 src/
-│── app.module.ts
+│── components/
+│ ├── ui/ # Generic UI components (PrimaryButton, etc.)
+│ └── features/ # Business-related components (User, Header, etc.)
 │
-│── auth/
-│   ├── auth.controller.ts
-│   ├── auth.service.ts
-│   ├── auth.guard.ts
-│   └── token.service.ts
+│── pages/ # Application pages
 │
-│── user/
-│   ├── user.controller.ts
-│   ├── user.service.ts
-│   ├── user.repository.ts
-│   └── dto/
+│── layouts/ # Layouts (e.g., DisconnectedLayout)
 │
-│── alert/
-│   ├── alert.controller.ts
-│   ├── alert.service.ts
+│── router/ # Route configuration
+│
+│── api/ # API calls
+│
+│── hooks/ # Custom hooks (e.g., useUserService)
+│
+│── guards/ # Route protection
 │
 │── utils/
-│   ├── exceptions/
-│   └── filters/
-│
-│── main.ts
+│ └── axiosClient.ts
 ```
 
 ---
 
 ## ⚙️ Configuration
 
-Assure-toi d’avoir :
+An `.env.example` file is provided at the root of the project. It lists all required environment variables.
 
-- Node.js installé
-- MySQL en local ou via Docker
-
-Un fichier **`.env.example`** est fourni comme modèle de configuration.
-
-Pour l’utiliser :
+To use it:
 
 ```bash
 cp .env.example .env
 ```
 
-Puis renseigner les valeurs adaptées à ton environnement.
+Then fill in the values according to your environment.
 
 ---
 
-## 🚀 Lancer le projet en local
+## 🚀 Run the project locally
 
-Installer les dépendances :
-```bash
+``` bash
 npm install
+npm run dev
 ```
 
-Générer Prisma :
-```bash
-npx prisma generate
-```
-
-Lancer le backend :
-```bash
-npm run start:dev
-```
-
-Par défaut : http://localhost:3000
+Then open: http://localhost:5173
 
 ---
 
-## 🧪 Tests (Jest)
+## 🧪 E2E Tests (Cypress)
 
-Le projet inclut des tests automatisés avec **Jest** (tests unitaires).
+The project includes End-to-End tests using Cypress.  
+Tests are located in the `cypress/` folder.  
 
-Commandes :
-
-```bash
-npm run test
-npm run test:watch
+To run them:
+``` bash
+npm run cy:open
 ```
 
 ---
 
 ## 📬 Contact
 
-Si vous avez des questions, des suggestions ou souhaitez échanger sur le projet, vous pouvez me contacter :
+If you have any questions, suggestions, or would like to discuss the project, feel free to contact me:
 
-Email : contact@peterfrancois.dev
+Email: contact@peterfrancois.dev
 
-LinkedIn : https://www.linkedin.com/in/peterfrancois/
+LinkedIn: https://www.linkedin.com/in/peterfrancois/
 
-GitHub : https://github.com/peter-francois/
+GitHub: https://github.com/peter-francois/
 
-N’hésitez pas à ouvrir une issue ou une pull request si vous souhaitez contribuer au projet.
+Feel free to open an issue or submit a pull request if you’d like to contribute to the project.
