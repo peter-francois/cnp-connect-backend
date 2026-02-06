@@ -7,6 +7,11 @@ Ce dépôt contient le **backend** de l’application, développé avec **NestJS
 
 ---
 
+## 📦 Dépôt parent
+Ce projet fait partie de : https://github.com/peter-francois/cnp-connect-resources
+
+---
+
 ## 🔁 Origine du dépôt & DevOps
 
 Ce dépôt est un **miroir du dépôt GitLab d’origine** du projet CNP-Connect. Il reflète donc l’état du code développé initialement sur GitLab.
